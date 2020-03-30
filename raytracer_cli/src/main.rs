@@ -3,8 +3,6 @@ use std::fs::File;
 use std::io::{self, Write};
 use std::path::Path;
 
-const SPHERE: Sphere = Sphere::new(Vec3::new(0.0, 0.0, -1.0), 0.5);
-
 fn color(objects: &[Box<dyn Intersectable>], ray: Ray) -> Vec3 {
     if let Some(record) = objects.is_intersected_by(&ray, 0.0, None) {
         let point = (ray.point_at_parameter(record.t) - Vec3::new(0.0, 0.0, -1.0)).to_unit();
@@ -48,22 +46,26 @@ impl Image {
 }
 
 fn main() {
-    let nx = 200;
-    let ny = 100;
+    let nx = 800;
+    let ny = 600;
+    let aspect_ratio = (nx as FloatTy) / (ny as FloatTy);
 
     let mut image = Image::new(nx, ny);
 
-    let objects: Vec<Box<dyn Intersectable>> = vec![Box::new(SPHERE)];
+    let objects: Vec<Box<dyn Intersectable>> = vec![
+        Box::new(Sphere::new(Vec3::new(0.0, 0.0, -2.0), 0.5)),
+        Box::new(Sphere::new(Vec3::new(0.0, -100.5, -2.0), 100.0)),
+    ];
 
-    let lower_left_corner = Vec3::new(-2.0, -1.0, -1.0);
-    let horizontal = Vec3::new(4.0, 0.0, 0.0);
-    let vertical = Vec3::new(0.0, 2.0, 0.0);
+    let lower_left_corner = Vec3::new(-1.0, -1.0, -1.0);
+    let horizontal = Vec3::new(2.0, 0.0, 0.0);
+    let vertical = Vec3::new(0.0, 2.0 / aspect_ratio, 0.0);
     let origin = Vec3::zero();
 
     for j in 0..ny {
         for i in 0..nx {
             let u = i as FloatTy / nx as FloatTy;
-            let v = j as FloatTy / ny as FloatTy;
+            let v = (ny - j - 1) as FloatTy / ny as FloatTy;
 
             let ray = Ray::new(origin, lower_left_corner + horizontal * u + vertical * v);
             let color_vec = color(&objects, ray);
