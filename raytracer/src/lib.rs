@@ -1,7 +1,9 @@
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn it_works() {
-        assert_eq!(2 + 2, 4);
-    }
-}
+mod color;
+mod ray;
+mod vec3;
+
+pub type FloatTy = f32;
+
+pub use crate::color::*;
+pub use crate::ray::*;
+pub use crate::vec3::*;

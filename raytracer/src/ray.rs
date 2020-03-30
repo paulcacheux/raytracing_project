@@ -1,17 +1,18 @@
-use crate::math::{FloatTy, Vec3};
+use crate::vec3::Vec3;
+use crate::FloatTy;
 
 #[derive(Debug, Clone)]
 pub struct Ray {
-    origin: Vec3,
-    direction: Vec3,
+    pub origin: Vec3,
+    pub direction: Vec3,
 }
 
 impl Ray {
-    pub fn new(origin: Vec3, direction: Vec3) {
+    pub fn new(origin: Vec3, direction: Vec3) -> Self {
         Ray { origin, direction }
     }
 
-    pub fn point_at_parameter(&self, param: FloatTy) -> FloatTy {
+    pub fn point_at_parameter(&self, param: FloatTy) -> Vec3 {
         self.origin + self.direction * param
     }
 }
