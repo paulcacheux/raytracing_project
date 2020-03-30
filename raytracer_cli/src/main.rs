@@ -1,12 +1,19 @@
-use raytracer::{Color, FloatTy, Ray, Vec3};
+use raytracer::{Color, FloatTy, Intersectable, Ray, Sphere, Vec3};
 use std::fs::File;
 use std::io::{self, Write};
 use std::path::Path;
 
-fn color(ray: Ray) -> Vec3 {
-    let unit_dir = ray.direction.to_unit();
-    let t = (unit_dir.y + 1.0) * 0.5;
-    Vec3::all(1.0) * (1.0 - t) + Vec3::new(0.5, 0.7, 1.0) * t
+const SPHERE: Sphere = Sphere::new(Vec3::new(0.0, 0.0, -1.0), 0.5);
+
+fn color(objects: &[Box<dyn Intersectable>], ray: Ray) -> Vec3 {
+    if let Some(record) = objects.is_intersected_by(&ray, 0.0, None) {
+        let point = (ray.point_at_parameter(record.t) - Vec3::new(0.0, 0.0, -1.0)).to_unit();
+        (point + Vec3::all(1.0)) * 0.5
+    } else {
+        let unit_dir = ray.direction.to_unit();
+        let t = (unit_dir.y + 1.0) * 0.5;
+        Vec3::all(1.0) * t + Vec3::new(0.5, 0.7, 1.0) * (1.0 - t)
+    }
 }
 
 struct Image {
@@ -46,6 +53,8 @@ fn main() {
 
     let mut image = Image::new(nx, ny);
 
+    let objects: Vec<Box<dyn Intersectable>> = vec![Box::new(SPHERE)];
+
     let lower_left_corner = Vec3::new(-2.0, -1.0, -1.0);
     let horizontal = Vec3::new(4.0, 0.0, 0.0);
     let vertical = Vec3::new(0.0, 2.0, 0.0);
@@ -57,14 +66,10 @@ fn main() {
             let v = j as FloatTy / ny as FloatTy;
 
             let ray = Ray::new(origin, lower_left_corner + horizontal * u + vertical * v);
-            let color_vec = color(ray);
+            let color_vec = color(&objects, ray);
+            let color = Color::from_vec3(color_vec);
 
-            let color = Color::rgb(
-                (color_vec.x * 255.0) as u8,
-                (color_vec.y * 255.0) as u8,
-                (color_vec.z * 255.0) as u8,
-            );
-            image.set_pixel(i, ny - j - 1, color);
+            image.set_pixel(i, j, color);
         }
     }
     let output_path = "./img.ppm";

@@ -8,15 +8,15 @@ pub struct Vec3 {
 }
 
 impl Vec3 {
-    pub fn new(x: FloatTy, y: FloatTy, z: FloatTy) -> Self {
+    pub const fn new(x: FloatTy, y: FloatTy, z: FloatTy) -> Self {
         Vec3 { x, y, z }
     }
 
-    pub fn zero() -> Self {
+    pub const fn zero() -> Self {
         Vec3::new(0.0, 0.0, 0.0)
     }
 
-    pub fn all(x: FloatTy) -> Self {
+    pub const fn all(x: FloatTy) -> Self {
         Vec3::new(x, x, x)
     }
 
@@ -60,6 +60,20 @@ impl std::ops::Add for Vec3 {
 impl std::ops::AddAssign for Vec3 {
     fn add_assign(&mut self, other: Self) {
         *self = *self + other
+    }
+}
+
+impl std::ops::Sub for Vec3 {
+    type Output = Vec3;
+
+    fn sub(self, other: Self) -> Self {
+        Vec3::new(self.x - other.x, self.y - other.y, self.z - other.z)
+    }
+}
+
+impl std::ops::SubAssign for Vec3 {
+    fn sub_assign(&mut self, other: Self) {
+        *self = *self - other
     }
 }
 
