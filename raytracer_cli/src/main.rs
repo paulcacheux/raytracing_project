@@ -105,6 +105,6 @@ fn main() {
         image.set_pixel(i, j, color);
     }
 
-    let output_path = "./img.png";
+    let output_path = "./last_result.png";
     image.output_as_png(output_path).unwrap();
 }
