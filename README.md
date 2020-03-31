@@ -1,4 +1,4 @@
-# raytracing_project
+# RayTracing Project
 
 Last result image:
 
