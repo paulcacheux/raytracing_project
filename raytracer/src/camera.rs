@@ -14,7 +14,7 @@ impl Camera {
     pub fn new(aspect_ratio: FloatTy) -> Self {
         Camera {
             origin: Vec3::zero(),
-            lower_left: Vec3::new(-1.0, -1.0, -1.0),
+            lower_left: Vec3::new(-1.0, -1.0 / aspect_ratio, -1.0),
             horizontal: Vec3::new(2.0, 0.0, 0.0),
             vertical: Vec3::new(0.0, 2.0 / aspect_ratio, 0.0),
         }

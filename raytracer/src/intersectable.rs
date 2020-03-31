@@ -1,3 +1,6 @@
+use std::sync::Arc;
+
+use crate::material::Material;
 use crate::ray::Ray;
 use crate::vec3::Vec3;
 use crate::FloatTy;
@@ -7,6 +10,7 @@ pub struct IntersectionRecord {
     pub t: FloatTy,
     pub p: Vec3,
     pub normal: Vec3,
+    pub material: Arc<dyn Material>,
 }
 
 pub trait Intersectable: Sync + Send {

@@ -1,62 +1,31 @@
-use std::fs::File;
-use std::io::{self, BufWriter, Write};
-use std::path::Path;
 use std::sync::mpsc;
 use std::sync::Arc;
 
-use png;
 use rand;
 use rand::prelude::*;
 use threadpool::ThreadPool;
 
-use raytracer::{Camera, Color, FloatTy, Intersectable, Ray, Sphere, Vec3};
+use raytracer::{Camera, Color, FloatTy, Intersectable, Lambertian, Metal, Ray, Sphere, Vec3};
 
-fn color(objects: &[Box<dyn Intersectable>], ray: Ray) -> Vec3 {
-    if let Some(record) = objects.is_intersected_by(&ray, 0.0, None) {
-        let point = (ray.point_at_parameter(record.t) - Vec3::new(0.0, 0.0, -1.0)).to_unit();
-        (point + Vec3::all(1.0)) * 0.5
+mod image;
+
+use image::Image;
+
+fn color(objects: &[Box<dyn Intersectable>], ray: Ray, depth: usize) -> Vec3 {
+    if let Some(record) = objects.is_intersected_by(&ray, 0.001, None) {
+        if depth < 50 {
+            if let Some(material_scatter) = record.material.scatter(&ray, &record) {
+                return Vec3::memberwise_product(
+                    color(objects, material_scatter.scattered, depth + 1),
+                    material_scatter.attenuation,
+                );
+            }
+        }
+        Vec3::all(0.0)
     } else {
         let unit_dir = ray.direction.to_unit();
         let t = (unit_dir.y + 1.0) * 0.5;
         Vec3::all(1.0) * t + Vec3::new(0.5, 0.7, 1.0) * (1.0 - t)
-    }
-}
-
-struct Image {
-    width: usize,
-    height: usize,
-    data: Vec<Color>,
-}
-
-impl Image {
-    fn new(width: usize, height: usize) -> Self {
-        Image {
-            width,
-            height,
-            data: vec![Color::rgb(0, 0, 0); width * height],
-        }
-    }
-
-    fn set_pixel(&mut self, x: usize, y: usize, color: Color) {
-        self.data[y * self.width + x] = color;
-    }
-
-    fn output_as_png<P: AsRef<Path>>(&self, path: P) -> io::Result<()> {
-        let file = File::create(path)?;
-        let writer = BufWriter::new(file);
-
-        let mut encoder = png::Encoder::new(writer, self.width as u32, self.height as u32);
-        encoder.set_color(png::ColorType::RGB);
-        encoder.set_depth(png::BitDepth::Eight);
-
-        let mut writer = encoder.write_header()?;
-        let mut stream = writer.stream_writer();
-
-        for pixel in &self.data {
-            stream.write(&[pixel.r, pixel.g, pixel.b])?;
-        }
-
-        Ok(())
     }
 }
 
@@ -67,22 +36,40 @@ fn compute_pixel(
     v: FloatTy,
 ) -> Color {
     let ray = camera.get_ray(u, v);
-    let color_vec = color(&objects, ray);
-    Color::from_vec3(color_vec)
+    let color_vec = color(&objects, ray, 0);
+    Color::from_vec3_gamma_corrected(color_vec)
 }
 
 fn main() {
-    let nx: usize = 800;
-    let ny: usize = 600;
-    let sample_count = 4;
+    let nx: usize = 1280;
+    let ny: usize = 720;
+    let sample_count = 8;
 
     let aspect_ratio = (nx as FloatTy) / (ny as FloatTy);
 
     let mut image = Image::new(nx, ny);
 
     let objects: Arc<Vec<Box<dyn Intersectable>>> = Arc::new(vec![
-        Box::new(Sphere::new(Vec3::new(0.0, 0.0, -2.0), 0.5)),
-        Box::new(Sphere::new(Vec3::new(0.0, -100.5, -2.0), 100.0)),
+        Box::new(Sphere::new(
+            Vec3::new(0.0, 0.0, -3.0),
+            0.5,
+            Arc::new(Lambertian::new(Vec3::new(0.8, 0.3, 0.3))),
+        )),
+        Box::new(Sphere::new(
+            Vec3::new(1.0, 0.0, -3.0),
+            0.5,
+            Arc::new(Metal::new(Vec3::new(0.8, 0.6, 0.2), Some(0.2))),
+        )),
+        Box::new(Sphere::new(
+            Vec3::new(-1.0, 0.0, -3.0),
+            0.5,
+            Arc::new(Metal::new(Vec3::new(0.8, 0.8, 0.8), None)),
+        )),
+        Box::new(Sphere::new(
+            Vec3::new(0.0, -100.5, -2.0),
+            100.0,
+            Arc::new(Lambertian::new(Vec3::new(0.8, 0.8, 0.0))),
+        )),
     ]);
 
     let camera = Arc::new(Camera::new(aspect_ratio));

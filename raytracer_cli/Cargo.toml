@@ -8,6 +8,6 @@ edition = "2018"
 
 [dependencies]
 raytracer = { path = "../raytracer" }
-threadpool = "1.7.1"
-png = "0.16.1"
-rand = "0.7.3"
+threadpool = "1.7"
+png = "0.16"
+rand = "0.7"

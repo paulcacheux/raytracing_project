@@ -1,17 +1,26 @@
+use std::sync::Arc;
+
 use crate::intersectable::{Intersectable, IntersectionRecord};
+use crate::material::Material;
 use crate::ray::Ray;
 use crate::utils;
-use crate::{FloatTy, Vec3};
+use crate::vec3::Vec3;
+use crate::FloatTy;
 
 #[derive(Debug, Clone)]
 pub struct Sphere {
     pub center: Vec3,
     pub radius: FloatTy,
+    pub material: Arc<dyn Material>,
 }
 
 impl Sphere {
-    pub const fn new(center: Vec3, radius: FloatTy) -> Self {
-        Sphere { center, radius }
+    pub fn new(center: Vec3, radius: FloatTy, material: Arc<dyn Material>) -> Self {
+        Sphere {
+            center,
+            radius,
+            material,
+        }
     }
 }
 
@@ -39,6 +48,7 @@ impl Intersectable for Sphere {
                 t: t1,
                 p,
                 normal: (p - self.center) / self.radius,
+                material: self.material.clone(),
             });
         }
 
@@ -49,6 +59,7 @@ impl Intersectable for Sphere {
                 t: t2,
                 p,
                 normal: (p - self.center) / self.radius,
+                material: self.material.clone(),
             })
         } else {
             None

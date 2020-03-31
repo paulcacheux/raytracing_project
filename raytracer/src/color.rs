@@ -25,6 +25,14 @@ impl Color {
         )
     }
 
+    pub fn from_vec3_gamma_corrected(v: Vec3) -> Self {
+        Color::rgb(
+            (v.x.sqrt() * 255.0) as u8,
+            (v.y.sqrt() * 255.0) as u8,
+            (v.z.sqrt() * 255.0) as u8,
+        )
+    }
+
     pub fn average(colors: &[Color]) -> Self {
         let mut tr: u64 = 0;
         let mut tg: u64 = 0;
@@ -37,10 +45,19 @@ impl Color {
             ta += color.a as u64;
         }
 
-        let r = tr / colors.len() as u64;
-        let g = tg / colors.len() as u64;
-        let b = tb / colors.len() as u64;
-        let a = ta / colors.len() as u64;
+        let len = colors.len() as u64;
+        let r = tr / len;
+        let g = tg / len;
+        let b = tb / len;
+        let a = ta / len;
         Color::rgba(r as u8, g as u8, b as u8, a as u8)
     }
+
+    /*pub fn attenuated(self, coeff: f32) -> Self {
+        let r = (self.r as f32) * coeff;
+        let g = (self.g as f32) * coeff;
+        let b = (self.b as f32) * coeff;
+        let a = (self.a as f32) * coeff;
+        Color::rgba(r as u8, g as u8, b as u8, a as u8)
+    }*/
 }
