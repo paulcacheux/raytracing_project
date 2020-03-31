@@ -1,3 +1,4 @@
+mod camera;
 mod color;
 mod intersectable;
 mod ray;
@@ -7,6 +8,7 @@ mod vec3;
 
 pub type FloatTy = f32;
 
+pub use crate::camera::*;
 pub use crate::color::*;
 pub use crate::intersectable::*;
 pub use crate::ray::*;

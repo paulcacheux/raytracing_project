@@ -9,7 +9,7 @@ pub struct IntersectionRecord {
     pub normal: Vec3,
 }
 
-pub trait Intersectable {
+pub trait Intersectable: Sync + Send {
     fn is_intersected_by(
         &self,
         ray: &Ray,
