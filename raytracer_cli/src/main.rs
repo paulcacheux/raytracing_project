@@ -5,6 +5,8 @@ use std::sync::mpsc;
 use std::sync::Arc;
 
 use png;
+use rand;
+use rand::prelude::*;
 use threadpool::ThreadPool;
 
 use raytracer::{Camera, Color, FloatTy, Intersectable, Ray, Sphere, Vec3};
@@ -72,6 +74,8 @@ fn compute_pixel(
 fn main() {
     let nx: usize = 800;
     let ny: usize = 600;
+    let sample_count = 4;
+
     let aspect_ratio = (nx as FloatTy) / (ny as FloatTy);
 
     let mut image = Image::new(nx, ny);
@@ -91,11 +95,20 @@ fn main() {
         let objects = objects.clone();
 
         pool.execute(move || {
+            let mut rng = rand::thread_rng();
+
             for i in 0..nx {
-                let u = i as FloatTy / nx as FloatTy;
-                let v = (ny - j - 1) as FloatTy / ny as FloatTy;
-                let color = compute_pixel(&camera, &objects, u, v);
-                local_send.send((i, j, color)).unwrap();
+                let mut colors = Vec::with_capacity(sample_count);
+                for _ in 0..sample_count {
+                    let di: FloatTy = rng.gen();
+                    let dj: FloatTy = rng.gen();
+
+                    let u = (i as FloatTy + di) / nx as FloatTy;
+                    let v = ((ny - j - 1) as FloatTy + dj) / ny as FloatTy;
+                    let color = compute_pixel(&camera, &objects, u, v);
+                    colors.push(color);
+                }
+                local_send.send((i, j, Color::average(&colors))).unwrap();
             }
         })
     }

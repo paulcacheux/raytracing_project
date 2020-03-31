@@ -24,4 +24,23 @@ impl Color {
             (v.z * 255.0) as u8,
         )
     }
+
+    pub fn average(colors: &[Color]) -> Self {
+        let mut tr: u64 = 0;
+        let mut tg: u64 = 0;
+        let mut tb: u64 = 0;
+        let mut ta: u64 = 0;
+        for color in colors {
+            tr += color.r as u64;
+            tg += color.g as u64;
+            tb += color.b as u64;
+            ta += color.a as u64;
+        }
+
+        let r = tr / colors.len() as u64;
+        let g = tg / colors.len() as u64;
+        let b = tb / colors.len() as u64;
+        let a = ta / colors.len() as u64;
+        Color::rgba(r as u8, g as u8, b as u8, a as u8)
+    }
 }
