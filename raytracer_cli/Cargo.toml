@@ -9,3 +9,4 @@ edition = "2018"
 [dependencies]
 raytracer = { path = "../raytracer" }
 threadpool = "1.7.1"
+png = "0.16.1"

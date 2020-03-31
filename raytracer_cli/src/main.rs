@@ -1,9 +1,10 @@
 use std::fs::File;
-use std::io::{self, Write};
+use std::io::{self, BufWriter, Write};
 use std::path::Path;
 use std::sync::mpsc;
 use std::sync::Arc;
 
+use png;
 use threadpool::ThreadPool;
 
 use raytracer::{Camera, Color, FloatTy, Intersectable, Ray, Sphere, Vec3};
@@ -38,12 +39,19 @@ impl Image {
         self.data[y * self.width + x] = color;
     }
 
-    fn output_as_ppm<P: AsRef<Path>>(&self, path: P) -> io::Result<()> {
-        let mut file = File::create(path)?;
-        write!(file, "P3\n{} {}\n255\n", self.width, self.height)?;
+    fn output_as_png<P: AsRef<Path>>(&self, path: P) -> io::Result<()> {
+        let file = File::create(path)?;
+        let writer = BufWriter::new(file);
+
+        let mut encoder = png::Encoder::new(writer, self.width as u32, self.height as u32);
+        encoder.set_color(png::ColorType::RGB);
+        encoder.set_depth(png::BitDepth::Eight);
+
+        let mut writer = encoder.write_header()?;
+        let mut stream = writer.stream_writer();
 
         for pixel in &self.data {
-            write!(file, "{} {} {}\n", pixel.r, pixel.g, pixel.b)?;
+            stream.write(&[pixel.r, pixel.g, pixel.b])?;
         }
 
         Ok(())
@@ -97,6 +105,6 @@ fn main() {
         image.set_pixel(i, j, color);
     }
 
-    let output_path = "./img.ppm";
-    image.output_as_ppm(output_path).unwrap();
+    let output_path = "./img.png";
+    image.output_as_png(output_path).unwrap();
 }
