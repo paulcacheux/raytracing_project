@@ -7,6 +7,12 @@ pub struct Vec3 {
     pub z: FloatTy,
 }
 
+pub static BASES: [Vec3; 3] = [
+    Vec3::new(1.0, 0.0, 0.0),
+    Vec3::new(0.0, 1.0, 0.0),
+    Vec3::new(0.0, 0.0, 1.0),
+];
+
 impl Vec3 {
     pub const fn new(x: FloatTy, y: FloatTy, z: FloatTy) -> Self {
         Vec3 { x, y, z }

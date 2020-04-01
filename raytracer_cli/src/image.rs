@@ -6,6 +6,8 @@ use png;
 
 use raytracer::Color;
 
+const GAMMA_CORRECTION: bool = true;
+
 #[derive(Debug, Clone)]
 pub struct Image {
     width: usize,
@@ -23,6 +25,11 @@ impl Image {
     }
 
     pub fn set_pixel(&mut self, x: usize, y: usize, color: Color) {
+        let color = if GAMMA_CORRECTION {
+            color.gamma_corrected()
+        } else {
+            color
+        };
         self.data[y * self.width + x] = color;
     }
 

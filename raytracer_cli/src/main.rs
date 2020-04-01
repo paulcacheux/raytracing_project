@@ -5,27 +5,31 @@ use rand;
 use rand::prelude::*;
 use threadpool::ThreadPool;
 
-use raytracer::{Camera, Color, FloatTy, Intersectable, Lambertian, Metal, Ray, Sphere, Vec3};
+use raytracer::{
+    Camera, Color, Dielectric, FloatTy, Intersectable, Lambertian, Matte, Metal, Ray, Sphere, Vec3,
+};
 
 mod image;
 
 use image::Image;
 
 fn color(objects: &[Box<dyn Intersectable>], ray: Ray, depth: usize) -> Vec3 {
-    if let Some(record) = objects.is_intersected_by(&ray, 0.001, None) {
+    if let Some(record) = objects.is_intersected_by(&ray, 0.01, None) {
         if depth < 50 {
             if let Some(material_scatter) = record.material.scatter(&ray, &record) {
-                return Vec3::memberwise_product(
-                    color(objects, material_scatter.scattered, depth + 1),
-                    material_scatter.attenuation,
-                );
+                if let Some(scattered) = material_scatter.scattered {
+                    return Vec3::memberwise_product(
+                        color(objects, scattered, depth + 1),
+                        material_scatter.attenuation,
+                    );
+                } else {
+                    return material_scatter.attenuation;
+                }
             }
         }
         Vec3::all(0.0)
     } else {
-        let unit_dir = ray.direction.to_unit();
-        let t = (unit_dir.y + 1.0) * 0.5;
-        Vec3::all(1.0) * t + Vec3::new(0.5, 0.7, 1.0) * (1.0 - t)
+        Vec3::all(0.05)
     }
 }
 
@@ -37,13 +41,13 @@ fn compute_pixel(
 ) -> Color {
     let ray = camera.get_ray(u, v);
     let color_vec = color(&objects, ray, 0);
-    Color::from_vec3_gamma_corrected(color_vec)
+    Color::from_vec3(color_vec)
 }
 
 fn main() {
-    let nx: usize = 1280;
-    let ny: usize = 720;
-    let sample_count = 8;
+    let nx: usize = 800;
+    let ny: usize = 600;
+    let sample_count = 64;
 
     let aspect_ratio = (nx as FloatTy) / (ny as FloatTy);
 
@@ -51,24 +55,39 @@ fn main() {
 
     let objects: Arc<Vec<Box<dyn Intersectable>>> = Arc::new(vec![
         Box::new(Sphere::new(
-            Vec3::new(0.0, 0.0, -3.0),
+            Vec3::new(0.0, 0.0, -4.0),
             0.5,
             Arc::new(Lambertian::new(Vec3::new(0.8, 0.3, 0.3))),
         )),
         Box::new(Sphere::new(
-            Vec3::new(1.0, 0.0, -3.0),
+            Vec3::new(1.0, 0.0, -2.0),
             0.5,
             Arc::new(Metal::new(Vec3::new(0.8, 0.6, 0.2), Some(0.2))),
         )),
         Box::new(Sphere::new(
-            Vec3::new(-1.0, 0.0, -3.0),
+            Vec3::new(-1.0, 0.0, -3.5),
             0.5,
             Arc::new(Metal::new(Vec3::new(0.8, 0.8, 0.8), None)),
         )),
+        /*Box::new(Sphere::new(
+            Vec3::new(-2.0, 0.0, -3.0),
+            0.5,
+            Arc::new(Dielectric::new(100.0)),
+        )),*/
         Box::new(Sphere::new(
-            Vec3::new(0.0, -100.5, -2.0),
+            Vec3::new(-2.0, 0.0, -3.0),
+            0.5,
+            Arc::new(Dielectric::new(2.4)),
+        )),
+        Box::new(Sphere::new(
+            Vec3::new(0.0, 3.0, 101.0),
             100.0,
-            Arc::new(Lambertian::new(Vec3::new(0.8, 0.8, 0.0))),
+            Arc::new(Matte::new(Vec3::new(1.0, 1.0, 1.0))),
+        )),
+        Box::new(Sphere::new(
+            Vec3::new(0.0, -1000.5, -2.0),
+            1000.0,
+            Arc::new(Lambertian::new(Vec3::new(0.47, 0.87, 0.56))),
         )),
     ]);
 

@@ -25,11 +25,19 @@ impl Color {
         )
     }
 
-    pub fn from_vec3_gamma_corrected(v: Vec3) -> Self {
-        Color::rgb(
-            (v.x.sqrt() * 255.0) as u8,
-            (v.y.sqrt() * 255.0) as u8,
-            (v.z.sqrt() * 255.0) as u8,
+    pub fn gamma_corrected(self) -> Color {
+        fn component(c: u8) -> u8 {
+            let c = (c as f64) / 255.0;
+            let c = c.sqrt();
+            let c = c * 255.0;
+            c as u8
+        }
+
+        Color::rgba(
+            component(self.r),
+            component(self.g),
+            component(self.b),
+            self.a,
         )
     }
 
