@@ -7,12 +7,6 @@ pub struct Vec3 {
     pub z: FloatTy,
 }
 
-pub static BASES: [Vec3; 3] = [
-    Vec3::new(1.0, 0.0, 0.0),
-    Vec3::new(0.0, 1.0, 0.0),
-    Vec3::new(0.0, 0.0, 1.0),
-];
-
 impl Vec3 {
     pub const fn new(x: FloatTy, y: FloatTy, z: FloatTy) -> Self {
         Vec3 { x, y, z }
@@ -54,6 +48,23 @@ impl Vec3 {
         self / self.length()
     }
 }
+
+macro_rules! impl_from_array_vec3 {
+    ($float_ty:ty) => {
+        impl From<[$float_ty; 3]> for Vec3 {
+            fn from(array: [$float_ty; 3]) -> Self {
+                Vec3 {
+                    x: array[0] as _,
+                    y: array[1] as _,
+                    z: array[2] as _,
+                }
+            }
+        }
+    };
+}
+
+impl_from_array_vec3!(f32);
+impl_from_array_vec3!(f64);
 
 impl std::ops::Add for Vec3 {
     type Output = Vec3;

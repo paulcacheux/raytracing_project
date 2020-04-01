@@ -5,6 +5,7 @@ use crate::FloatTy;
 
 use rand;
 use rand::prelude::*;
+use rand_distr::{Distribution, UnitSphere};
 
 #[derive(Debug, Clone)]
 pub struct MaterialScatter {
@@ -50,8 +51,7 @@ impl Lambertian {
 impl Material for Lambertian {
     fn scatter(&self, _: &Ray, record: &IntersectionRecord) -> Option<MaterialScatter> {
         let mut rng = rand::thread_rng();
-        // let mut target = record.p + record.normal + random_unit_sphere(&mut rng);
-        let new_direction = random_unit_hemisphere(&mut rng, record.normal);
+        let new_direction = utils::random_unit_hemisphere(&mut rng, record.normal);
 
         let scattered = Ray::new(record.p, new_direction);
         Some(MaterialScatter {
@@ -59,43 +59,6 @@ impl Material for Lambertian {
             scattered: Some(scattered),
         })
     }
-}
-
-fn random_unit_sphere<R: Rng>(rng: &mut R) -> Vec3 {
-    loop {
-        let temp = Vec3::new(rng.gen(), rng.gen(), rng.gen()) * 2.0 - Vec3::all(1.0);
-        if temp.length_squared() < 1.0 {
-            return temp;
-        }
-    }
-}
-
-fn random_unit_hemisphere<R: Rng>(rng: &mut R, normal: Vec3) -> Vec3 {
-    use crate::vec3::BASES;
-
-    // https://math.stackexchange.com/questions/1585975/how-to-generate-random-points-on-a-sphere
-    let u1: f64 = rng.gen();
-    let u2: f64 = rng.gen();
-    let lambda = (2.0 * u1 - 1.0).acos() - std::f64::consts::FRAC_PI_2;
-    let longitude = 2.0 * std::f64::consts::PI * u2;
-
-    let x = lambda.cos() * longitude.cos();
-    let y = (lambda.cos() * longitude.sin()).abs(); // abs because we want in the hemisphere
-    let z = lambda.sin();
-
-    let v = Vec3::new(x as _, y as _, z as _).to_unit();
-
-    let (comp_index, _) = [v.x, v.y, v.z]
-        .iter()
-        .map(|comp| comp.abs())
-        .enumerate()
-        .min_by(|(_, a), (_, b)| a.partial_cmp(b).unwrap())
-        .unwrap();
-
-    let s = BASES[comp_index];
-    let t = Vec3::cross(normal, s).to_unit();
-
-    Vec3::new(Vec3::dot(v, s), Vec3::dot(v, normal), Vec3::dot(v, t)).to_unit()
 }
 
 #[derive(Debug, Clone)]
@@ -118,10 +81,9 @@ impl Material for Metal {
         let mut rng = rand::thread_rng();
         let reflected = utils::reflect(ray.direction.to_unit(), record.normal);
         if Vec3::dot(reflected, record.normal) > 0.0 {
-            let scattered = Ray::new(
-                record.p,
-                reflected.to_unit() + random_unit_sphere(&mut rng) * self.fuzz,
-            );
+            let sample_sphere: [FloatTy; 3] = UnitSphere.sample(&mut rng);
+            let sample_sphere: Vec3 = sample_sphere.into();
+            let scattered = Ray::new(record.p, reflected.to_unit() + sample_sphere * self.fuzz);
             Some(MaterialScatter {
                 attenuation: self.albedo,
                 scattered: Some(scattered),
@@ -186,6 +148,9 @@ impl Material for Dielectric {
 
 mod utils {
     use crate::{FloatTy, Vec3};
+    use rand;
+    use rand::prelude::*;
+    use rand_distr::{Distribution, UnitSphere};
 
     pub fn reflect(v: Vec3, n: Vec3) -> Vec3 {
         v - n * 2.0 * Vec3::dot(v, n)
@@ -206,5 +171,24 @@ mod utils {
         let r0 = (1.0 - reflective_index) / (1.0 + reflective_index);
         let r0 = r0 * r0;
         r0 + (1.0 - r0) * (1.0 - cos).powi(5)
+    }
+
+    pub fn random_unit_hemisphere<R: Rng>(rng: &mut R, normal: Vec3) -> Vec3 {
+        let [x, y, z]: [f64; 3] = UnitSphere.sample(rng);
+        let v = Vec3::new(x as _, y.abs() as _, z as _).to_unit();
+
+        let t = if normal.x.abs() > normal.y.abs() {
+            Vec3::new(normal.z, 0.0, -normal.x).to_unit()
+        } else {
+            Vec3::new(0.0, -normal.z, normal.y).to_unit()
+        };
+        let s = Vec3::cross(normal, t);
+
+        Vec3::new(
+            v.x * s.x + v.y * normal.x + v.z * t.x,
+            v.x * s.y + v.y * normal.y + v.z * t.y,
+            v.x * s.z + v.y * normal.z + v.z * t.z,
+        )
+        .to_unit()
     }
 }

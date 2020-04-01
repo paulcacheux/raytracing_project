@@ -55,12 +55,12 @@ fn main() {
 
     let objects: Arc<Vec<Box<dyn Intersectable>>> = Arc::new(vec![
         Box::new(Sphere::new(
-            Vec3::new(0.0, 0.0, -4.0),
+            Vec3::new(0.0, 0.0, -2.0),
             0.5,
             Arc::new(Lambertian::new(Vec3::new(0.8, 0.3, 0.3))),
         )),
         Box::new(Sphere::new(
-            Vec3::new(1.0, 0.0, -2.0),
+            Vec3::new(1.0, 0.0, -4.0),
             0.5,
             Arc::new(Metal::new(Vec3::new(0.8, 0.6, 0.2), Some(0.2))),
         )),
