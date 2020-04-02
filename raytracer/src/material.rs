@@ -15,25 +15,38 @@ pub struct MaterialScatter {
 
 pub trait Material: Send + Sync + std::fmt::Debug {
     fn scatter(&self, ray: &Ray, record: &IntersectionRecord) -> Option<MaterialScatter>;
-}
-
-#[derive(Debug, Clone)]
-pub struct Matte {
-    albedo: Vec3,
-}
-
-impl Matte {
-    pub fn new(albedo: Vec3) -> Self {
-        Matte { albedo }
+    fn emit(&self, _u: FloatTy, _v: FloatTy, _point: Vec3) -> Vec3 {
+        Vec3::all(0.0)
     }
 }
 
-impl Material for Matte {
+#[derive(Debug, Clone)]
+pub struct Light {
+    emittance: Vec3,
+}
+
+impl Light {
+    pub fn white() -> Self {
+        Light {
+            emittance: Vec3::all(1.0),
+        }
+    }
+
+    pub fn new(emittance: Vec3) -> Self {
+        Light { emittance }
+    }
+}
+
+impl Material for Light {
     fn scatter(&self, _: &Ray, _: &IntersectionRecord) -> Option<MaterialScatter> {
         Some(MaterialScatter {
-            attenuation: self.albedo,
+            attenuation: Vec3::all(0.0),
             scattered: None,
         })
+    }
+
+    fn emit(&self, _u: FloatTy, _v: FloatTy, _point: Vec3) -> Vec3 {
+        self.emittance
     }
 }
 

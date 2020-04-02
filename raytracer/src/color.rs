@@ -1,3 +1,4 @@
+use crate::FloatTy;
 use crate::Vec3;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -19,9 +20,9 @@ impl Color {
 
     pub fn from_vec3(v: Vec3) -> Self {
         Color::rgb(
-            (v.x * 255.0) as u8,
-            (v.y * 255.0) as u8,
-            (v.z * 255.0) as u8,
+            (clamp(v.x, 0.0, 1.0) * 255.0) as u8,
+            (clamp(v.y, 0.0, 1.0) * 255.0) as u8,
+            (clamp(v.z, 0.0, 1.0) * 255.0) as u8,
         )
     }
 
@@ -60,12 +61,14 @@ impl Color {
         let a = ta / len;
         Color::rgba(r as u8, g as u8, b as u8, a as u8)
     }
+}
 
-    /*pub fn attenuated(self, coeff: f32) -> Self {
-        let r = (self.r as f32) * coeff;
-        let g = (self.g as f32) * coeff;
-        let b = (self.b as f32) * coeff;
-        let a = (self.a as f32) * coeff;
-        Color::rgba(r as u8, g as u8, b as u8, a as u8)
-    }*/
+fn clamp(v: FloatTy, min: FloatTy, max: FloatTy) -> FloatTy {
+    if v < min {
+        min
+    } else if v > max {
+        max
+    } else {
+        v
+    }
 }

@@ -22,6 +22,14 @@ impl Sphere {
             material,
         }
     }
+
+    fn compute_uv(p: Vec3) -> (FloatTy, FloatTy) {
+        let phi = p.z.atan2(p.x);
+        let theta = p.y.asin();
+        let u = 1.0 - (phi + std::f32::consts::PI) / (2.0 * std::f32::consts::PI);
+        let v = (theta + std::f32::consts::FRAC_PI_2) / std::f32::consts::PI;
+        (u, v)
+    }
 }
 
 impl Intersectable for Sphere {
@@ -44,9 +52,12 @@ impl Intersectable for Sphere {
         let t1 = (-b - discriminant.sqrt()) / (2.0 * a);
         if utils::is_in_range(t1, tmin, tmax) {
             let p = ray.point_at_parameter(t1);
+            let (u, v) = Sphere::compute_uv(p);
             return Some(IntersectionRecord {
                 t: t1,
                 p,
+                u,
+                v,
                 normal: (p - self.center) / self.radius,
                 material: self.material.clone(),
             });
@@ -55,9 +66,12 @@ impl Intersectable for Sphere {
         let t2 = (-b + discriminant.sqrt()) / (2.0 * a);
         if utils::is_in_range(t2, tmin, tmax) {
             let p = ray.point_at_parameter(t2);
+            let (u, v) = Sphere::compute_uv(p);
             Some(IntersectionRecord {
                 t: t2,
                 p,
+                u,
+                v,
                 normal: (p - self.center) / self.radius,
                 material: self.material.clone(),
             })

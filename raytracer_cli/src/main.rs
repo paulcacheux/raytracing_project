@@ -6,7 +6,7 @@ use rand::prelude::*;
 use threadpool::ThreadPool;
 
 use raytracer::{
-    Camera, Color, Dielectric, FloatTy, Intersectable, Lambertian, Matte, Metal, Ray, Sphere, Vec3,
+    Camera, Color, FloatTy, Intersectable, Lambertian, Light, Metal, Ray, Sphere, Vec3, Plan
 };
 
 mod image;
@@ -15,21 +15,26 @@ use image::Image;
 
 fn color(objects: &[Box<dyn Intersectable>], ray: Ray, depth: usize) -> Vec3 {
     if let Some(record) = objects.is_intersected_by(&ray, 0.01, None) {
-        if depth < 50 {
+        let emitted = record.material.emit(record.u, record.v, record.p);
+
+        if depth < 10 {
             if let Some(material_scatter) = record.material.scatter(&ray, &record) {
-                if let Some(scattered) = material_scatter.scattered {
-                    return Vec3::memberwise_product(
-                        color(objects, scattered, depth + 1),
-                        material_scatter.attenuation,
-                    );
+                return if let Some(scattered) = material_scatter.scattered {
+                    let cos_theta = Vec3::dot(scattered.direction, record.normal);
+                    let brdf = material_scatter.attenuation / (std::f64::consts::PI as FloatTy);
+                    let p = 1.0 / (2.0 * std::f64::consts::PI as FloatTy);
+                    let scattered_color = color(objects, scattered, depth + 1);
+                    emitted + Vec3::memberwise_product(scattered_color, brdf)
+                        * cos_theta
+                        / p
                 } else {
-                    return material_scatter.attenuation;
-                }
+                    emitted
+                };
             }
         }
-        Vec3::all(0.0)
+        emitted
     } else {
-        Vec3::all(0.05)
+        Vec3::all(0.0)
     }
 }
 
@@ -47,7 +52,7 @@ fn compute_pixel(
 fn main() {
     let nx: usize = 800;
     let ny: usize = 600;
-    let sample_count = 64;
+    let sample_count = 128;
 
     let aspect_ratio = (nx as FloatTy) / (ny as FloatTy);
 
@@ -55,9 +60,10 @@ fn main() {
 
     let objects: Arc<Vec<Box<dyn Intersectable>>> = Arc::new(vec![
         Box::new(Sphere::new(
-            Vec3::new(0.0, 0.0, -2.0),
+            Vec3::new(0.0, 0.0, -4.0),
             0.5,
-            Arc::new(Lambertian::new(Vec3::new(0.8, 0.3, 0.3))),
+            // Arc::new(Lambertian::new(Vec3::new(0.8, 0.3, 0.3))),
+            Arc::new(Light::new(Vec3::new(1.0, 0.3, 0.3)))
         )),
         Box::new(Sphere::new(
             Vec3::new(1.0, 0.0, -4.0),
@@ -70,28 +76,32 @@ fn main() {
             Arc::new(Metal::new(Vec3::new(0.8, 0.8, 0.8), None)),
         )),
         /*Box::new(Sphere::new(
-            Vec3::new(-2.0, 0.0, -3.0),
-            0.5,
-            Arc::new(Dielectric::new(100.0)),
-        )),*/
-        Box::new(Sphere::new(
-            Vec3::new(-2.0, 0.0, -3.0),
-            0.5,
-            Arc::new(Dielectric::new(2.4)),
-        )),
-        Box::new(Sphere::new(
             Vec3::new(0.0, 3.0, 101.0),
             100.0,
             Arc::new(Matte::new(Vec3::new(1.0, 1.0, 1.0))),
+        )),*/
+        Box::new(Sphere::new(
+            Vec3::new(12.0, 12.0, -2.0),
+            3.0,
+            Arc::new(Light::white()),
         )),
         Box::new(Sphere::new(
+            Vec3::new(-5.0, 2.0, 2.0),
+            3.0,
+            Arc::new(Light::white()),
+        )),
+        /*Box::new(Sphere::new(
             Vec3::new(0.0, -1000.5, -2.0),
             1000.0,
             Arc::new(Lambertian::new(Vec3::new(0.47, 0.87, 0.56))),
-        )),
+        )),*/
+        Box::new(Plan::new(Vec3::new(0.0, -0.5, 0.0), Vec3::new(0.0, 1.0, 0.0), Arc::new(Lambertian::new(Vec3::new(0.73, 0.73, 0.73))))),
+        Box::new(Plan::new(Vec3::new(0.0, 0.0, -7.0), Vec3::new(0.0, 0.0, 1.0), Arc::new(Lambertian::new(Vec3::new(0.73, 0.73, 0.73))))),
+        Box::new(Plan::new(Vec3::new(-2.5, 0.0, 0.0), Vec3::new(1.0, 0.0, 0.0), Arc::new(Lambertian::new(Vec3::new(0.12, 0.45, 0.15))))),
+        Box::new(Plan::new(Vec3::new(2.5, 0.0, 0.0), Vec3::new(-1.0, 0.0, 0.0), Arc::new(Lambertian::new(Vec3::new(0.65, 0.05, 0.05))))),
     ]);
 
-    let camera = Arc::new(Camera::new(aspect_ratio));
+    let camera = Arc::new(Camera::new(Vec3::new(0.0, 1.0, 0.0), Vec3::new(0.0, 0.0, -4.0), Vec3::new(0.0, 1.0, 0.0), 90.0, aspect_ratio));
     let (send, recv) = mpsc::channel();
     let pool = ThreadPool::new(16);
 

@@ -10,6 +10,8 @@ pub struct IntersectionRecord {
     pub t: FloatTy,
     pub p: Vec3,
     pub normal: Vec3,
+    pub u: FloatTy,
+    pub v: FloatTy,
     pub material: Arc<dyn Material>,
 }
 
