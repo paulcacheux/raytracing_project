@@ -3,6 +3,7 @@ use std::io;
 use std::sync::mpsc;
 use std::sync::Arc;
 
+use clap::{App, Arg};
 use lalrpop_util::lalrpop_mod;
 use rand;
 use rand::prelude::*;
@@ -51,11 +52,32 @@ fn parse_input_file(path: &str) -> io::Result<SceneDescription> {
 }
 
 fn main() {
-    let input_path = std::env::args().nth(1).unwrap();
+    let matches = App::new("Raytracing CLI")
+        .version("0.1")
+        .author("Paul Cacheux <paulcacheux@gmail.com>")
+        .about("Raytracing utility")
+        .arg(
+            Arg::with_name("INPUT")
+                .help("Sets the input description file.")
+                .required(true)
+                .index(1),
+        )
+        .arg(
+            Arg::with_name("preset")
+                .help("Sets the preset to run. Defaults to \"default\".")
+                .short("p")
+                .long("preset")
+                .value_name("PRESET")
+                .takes_value(true),
+        )
+        .get_matches();
+
+    let input_path = matches.value_of("INPUT").unwrap();
     let scene = parse_input_file(&input_path).unwrap();
 
     let objects = Arc::new(scene.declarations);
-    let preset = scene.presets.get("default").unwrap();
+    let preset_name = matches.value_of("preset").unwrap_or("default");
+    let preset = scene.presets.get(preset_name).unwrap();
 
     let nx: usize = preset.width;
     let ny: usize = preset.height;
