@@ -1,29 +1,36 @@
 use std::collections::HashMap;
 use std::str::FromStr;
 
-use crate::scene_description::{SceneDescription, SceneObjectOrIdentifier, SceneObject};
+use crate::scene_description::builder::SceneDescriptionBuilder;
+use crate::scene_description::{SceneObjectOrIdentifier, SceneObject};
 use raytracer::{Vec3};
 
-grammar(scene_description: &mut SceneDescription);
+grammar(builder: &mut SceneDescriptionBuilder);
 
 pub Program: () = {
-    <declarations:Statement+> => {}
+    <declarations:Statement+> <presets:Preset+> => {}
 };
 
 pub Statement: () = {
     Declaration => {},
     Assignment => {},
-}
+};
 
 pub Declaration: () = {
     "decl" <creator:Identifier> "(" <params:Params> ")" ";" => {
-        scene_description.declare(creator, params);
+        builder.declare(creator, params);
     }
 };
 
 pub Assignment: () = {
     "let" <name:Identifier> "=" <value:ObjectOrIdentifier> ";" => {
-        scene_description.register_variable(name, value);
+        builder.register_variable(name, value);
+    }
+};
+
+pub Preset: () = {
+    "preset" <name:Identifier> "{" <params:Params> "}" ";" => {
+        builder.add_preset(name, params);
     }
 };
 
@@ -31,7 +38,7 @@ pub Object: SceneObject = {
     <v:Vec3> => SceneObject::Vec3(v),
     <f:Float> => SceneObject::Float(f),
     <creator:Identifier> "(" <params:Params> ")" => {
-        scene_description.build_object(creator, params)
+        builder.build_object(creator, params)
     },
 };
 
@@ -73,6 +80,9 @@ match {
     "decl",
     "vec3",
     "let",
+    "preset",
+    "{",
+    "}",
     "(",
     ")",
     ",",

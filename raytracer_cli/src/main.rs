@@ -15,7 +15,18 @@ mod scene_description;
 lalrpop_mod!(pub grammar);
 
 use image::Image;
-use scene_description::SceneDescription;
+use scene_description::{SceneDescription, SceneDescriptionBuilder};
+
+#[derive(Debug)]
+pub struct PresetConfig {
+    width: usize,
+    height: usize,
+    look_from: Vec3,
+    look_at: Vec3,
+    up: Vec3,
+    vfov: FloatTy,
+    sample_count: usize,
+}
 
 fn compute_pixel(
     camera: &Camera,
@@ -28,38 +39,40 @@ fn compute_pixel(
     Color::from_vec3(color_vec)
 }
 
-fn parse_input_file(path: &str) -> io::Result<Vec<Box<dyn Intersectable>>> {
+fn parse_input_file(path: &str) -> io::Result<SceneDescription> {
     let content = fs::read_to_string(path)?;
 
-    let mut scene_description = SceneDescription::default();
+    let mut scene_description = SceneDescriptionBuilder::default();
     let parser = grammar::ProgramParser::new();
     parser.parse(&mut scene_description, &content).unwrap();
 
-    let world = scene_description.build();
-    Ok(world)
+    let scene = scene_description.build();
+    Ok(scene)
 }
 
 fn main() {
-    let nx: usize = 800;
-    let ny: usize = 600;
-    let sample_count = 1;
+    let input_path = std::env::args().nth(1).unwrap();
+    let scene = parse_input_file(&input_path).unwrap();
 
+    let objects = Arc::new(scene.declarations);
+    let preset = scene.presets.get("default").unwrap();
+
+    let nx: usize = preset.width;
+    let ny: usize = preset.height;
     let aspect_ratio = (nx as FloatTy) / (ny as FloatTy);
+
+    let camera = Arc::new(Camera::new(
+        preset.look_from,
+        preset.look_at,
+        preset.up,
+        preset.vfov,
+        aspect_ratio,
+    ));
+
+    let sample_count = preset.sample_count;
 
     let mut image = Image::new(nx, ny);
 
-    let input_path = std::env::args().nth(1).unwrap();
-    let world = parse_input_file(&input_path).unwrap();
-
-    let objects = Arc::new(world);
-
-    let camera = Arc::new(Camera::new(
-        Vec3::new(0.0, 1.0, 0.0),
-        Vec3::new(0.0, 0.0, -4.0),
-        Vec3::new(0.0, 1.0, 0.0),
-        90.0,
-        aspect_ratio,
-    ));
     let (send, recv) = mpsc::channel();
     let pool = ThreadPool::new(16);
 
