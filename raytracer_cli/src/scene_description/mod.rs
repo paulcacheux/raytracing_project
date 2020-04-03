@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
 
 use lazy_static::lazy_static;
@@ -113,8 +113,19 @@ lazy_static! {
 }
 
 impl SceneDescription {
-    pub fn register_variable(&mut self, name: String, object: SceneObject) {
-        self.variables.insert(name, object);
+    pub fn register_variable(&mut self, name: String, object: SceneObjectOrIdentifier) {
+        match object {
+            SceneObjectOrIdentifier::SceneObject(obj) => {
+                self.variables.insert(name, obj);
+            }
+            SceneObjectOrIdentifier::Identifier(id) => {
+                if let Some(obj) = self.get_variable(&id).cloned() {
+                    self.variables.insert(name, obj.clone());
+                } else {
+                    panic!("UNKNOWN identifier: {}", id);
+                }
+            }
+        }
     }
 
     pub fn get_variable(&self, name: &str) -> Option<&SceneObject> {
@@ -172,7 +183,6 @@ fn typecheck_params(
     prototype: &HashMap<String, (SceneObjectKind, bool)>,
     params: &HashMap<String, SceneObject>,
 ) {
-    // TODO check extraneous params
     for (arg_name, (arg_kind, optional)) in prototype {
         match (optional, params.get(arg_name)) {
             (_, Some(param)) => {
@@ -185,5 +195,12 @@ fn typecheck_params(
             }
             (false, None) => {}
         }
+    }
+
+    // check extraneous params
+    let proto_params: HashSet<&str> = prototype.keys().map(|s| s.as_ref()).collect();
+    let param_names: HashSet<&str> = params.keys().map(|s| s.as_ref()).collect();
+    if !param_names.is_subset(&proto_params) {
+        panic!("EXTRANEOUS PARAMETERS");
     }
 }
