@@ -8,15 +8,15 @@ use crate::vec3::Vec3;
 use crate::FloatTy;
 
 #[derive(Debug, Clone)]
-pub struct Plan {
+pub struct Plane {
     pub point: Vec3,
     pub normal: Vec3,
     pub material: Arc<dyn Material>,
 }
 
-impl Plan {
+impl Plane {
     pub fn new(point: Vec3, normal: Vec3, material: Arc<dyn Material>) -> Self {
-        Plan {
+        Plane {
             point,
             normal,
             material,
@@ -24,7 +24,7 @@ impl Plan {
     }
 }
 
-impl Intersectable for Plan {
+impl Intersectable for Plane {
     fn is_intersected_by(
         &self,
         ray: &Ray,
