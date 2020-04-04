@@ -30,6 +30,8 @@ pub struct PresetConfig {
     up: Vec3,
     vfov: FloatTy,
     sample_count: usize,
+    max_depth: usize,
+    background: Option<Vec3>,
 }
 
 fn compute_pixel(
@@ -37,9 +39,11 @@ fn compute_pixel(
     objects: &[Box<dyn Intersectable>],
     u: FloatTy,
     v: FloatTy,
+    max_depth: usize,
+    background: Vec3,
 ) -> Color {
     let ray = camera.get_ray(u, v);
-    let color_vec = raytracer::compute_color(&objects, ray, 0);
+    let color_vec = raytracer::compute_color(&objects, ray, 0, max_depth, background);
     Color::from_vec3(color_vec)
 }
 
@@ -63,6 +67,8 @@ fn default_scene_builder() -> SceneDescription {
         up: Vec3::new(0.0, 1.0, 0.0),
         vfov: 20.0,
         sample_count: 1,
+        max_depth: 3,
+        background: Some(Vec3::all(0.1)),
     };
 
     let complete_preset = PresetConfig {
@@ -73,6 +79,8 @@ fn default_scene_builder() -> SceneDescription {
         up: Vec3::new(0.0, 1.0, 0.0),
         vfov: 20.0,
         sample_count: 128,
+        max_depth: 10,
+        background: Some(Vec3::all(0.1)),
     };
 
     let mut objects: Vec<Box<dyn Intersectable>> = vec![Box::new(Plane::new(
@@ -190,6 +198,9 @@ fn main() {
         aspect_ratio,
     ));
 
+    let background_color = preset.background.unwrap_or(Vec3::all(0.0));
+    let max_depth = preset.max_depth;
+
     let sample_count = preset.sample_count;
 
     let mut image = Image::new(nx, ny);
@@ -213,7 +224,7 @@ fn main() {
 
                     let u = (i as FloatTy + di) / nx as FloatTy;
                     let v = ((ny - j - 1) as FloatTy + dj) / ny as FloatTy;
-                    let color = compute_pixel(&camera, &objects, u, v);
+                    let color = compute_pixel(&camera, &objects, u, v, max_depth, background_color);
                     colors.push(color);
                 }
                 local_send.send((i, j, Color::average(&colors))).unwrap();

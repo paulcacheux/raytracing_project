@@ -61,6 +61,8 @@ pub(crate) fn preset_creator(params: HashMap<String, SceneObject>) -> PresetConf
     let look_at = unwrap_scene_object!(params; "look_at"; SceneObject::Vec3(v) => *v);
     let up = unwrap_scene_object!(params; "up"; SceneObject::Vec3(v) => *v);
     let vfov = unwrap_scene_object!(params; "vfov"; SceneObject::Float(f) => *f);
+    let max_depth = unwrap_scene_object!(params; "max_depth"; SceneObject::Float(f) => *f as usize);
+    let background = optional_scene_object!(params; "background"; SceneObject::Vec3(v) => *v);
 
     PresetConfig {
         width,
@@ -70,6 +72,8 @@ pub(crate) fn preset_creator(params: HashMap<String, SceneObject>) -> PresetConf
         look_at,
         up,
         vfov,
+        max_depth,
+        background,
     }
 }
 
