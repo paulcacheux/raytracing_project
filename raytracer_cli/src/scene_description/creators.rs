@@ -4,7 +4,8 @@ use std::sync::Arc;
 use crate::scene_description::{SceneObject, SceneObjectKind};
 use crate::PresetConfig;
 
-use raytracer::{Intersectable, Lambertian, Light, Material, Metal, Plane, Sphere, Vec3};
+use raytracer::material::{Lambertian, Light, Material, Metal};
+use raytracer::{Intersectable, Plane, Sphere, Vec3};
 
 pub(crate) fn typecheck_params(
     prototype: &HashMap<String, (SceneObjectKind, bool)>,

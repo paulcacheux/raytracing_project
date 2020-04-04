@@ -1,7 +1,7 @@
 mod camera;
 mod color;
 mod intersectable;
-mod material;
+pub mod material;
 mod plane;
 mod ray;
 mod sphere;
@@ -13,7 +13,6 @@ pub type FloatTy = f32;
 pub use crate::camera::*;
 pub use crate::color::*;
 pub use crate::intersectable::*;
-pub use crate::material::*;
 pub use crate::plane::*;
 pub use crate::ray::*;
 pub use crate::sphere::*;

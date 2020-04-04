@@ -2,7 +2,8 @@ use std::collections::HashMap;
 use std::sync::Arc;
 
 use crate::PresetConfig;
-use raytracer::{Intersectable, Material, Vec3};
+use raytracer::material::Material;
+use raytracer::{Intersectable, Vec3};
 
 pub mod builder;
 mod creators;

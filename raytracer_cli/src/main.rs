@@ -10,8 +10,8 @@ use rand;
 use rand::prelude::*;
 use threadpool::ThreadPool;
 
+use raytracer::material::{Dielectric, Lambertian, Metal};
 use raytracer::{self, Camera, Color, FloatTy, Vec3};
-use raytracer::{Dielectric, Lambertian, Metal};
 use raytracer::{Intersectable, Plane, Sphere};
 
 mod image;
@@ -55,7 +55,17 @@ fn parse_input_file(path: &str) -> io::Result<SceneDescription> {
 }
 
 fn default_scene_builder() -> SceneDescription {
-    let preset = PresetConfig {
+    let default_preset = PresetConfig {
+        width: 600,
+        height: 400,
+        look_from: Vec3::new(13.0, 2.0, 3.0),
+        look_at: Vec3::new(0.0, 0.0, 0.0),
+        up: Vec3::new(0.0, 1.0, 0.0),
+        vfov: 20.0,
+        sample_count: 1,
+    };
+
+    let complete_preset = PresetConfig {
         width: 1200,
         height: 800,
         look_from: Vec3::new(13.0, 2.0, 3.0),
@@ -133,7 +143,7 @@ fn default_scene_builder() -> SceneDescription {
     )));
 
     SceneDescription {
-        presets: hashmap! { "default".into() => preset },
+        presets: hashmap! { "default".into() => default_preset, "complete".into() => complete_preset },
         declarations: objects,
     }
 }
