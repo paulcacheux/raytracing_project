@@ -53,28 +53,30 @@ impl Intersectable for Sphere {
         if utils::is_in_range(t1, tmin, tmax) {
             let p = ray.point_at_parameter(t1);
             let (u, v) = Sphere::compute_uv(p);
-            return Some(IntersectionRecord {
-                t: t1,
+            return Some(IntersectionRecord::new(
+                ray,
+                t1,
                 p,
+                (p - self.center) / self.radius,
                 u,
                 v,
-                normal: (p - self.center) / self.radius,
-                material: self.material.clone(),
-            });
+                self.material.clone(),
+            ));
         }
 
         let t2 = (-b + discriminant.sqrt()) / (2.0 * a);
         if utils::is_in_range(t2, tmin, tmax) {
             let p = ray.point_at_parameter(t2);
             let (u, v) = Sphere::compute_uv(p);
-            Some(IntersectionRecord {
-                t: t2,
+            return Some(IntersectionRecord::new(
+                ray,
+                t2,
                 p,
+                (p - self.center) / self.radius,
                 u,
                 v,
-                normal: (p - self.center) / self.radius,
-                material: self.material.clone(),
-            })
+                self.material.clone(),
+            ));
         } else {
             None
         }

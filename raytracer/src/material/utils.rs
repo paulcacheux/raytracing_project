@@ -7,15 +7,11 @@ pub fn reflect(v: Vec3, n: Vec3) -> Vec3 {
     v - n * 2.0 * Vec3::dot(v, n)
 }
 
-pub fn refract(v: Vec3, n: Vec3, ni_over_nt: FloatTy) -> Option<Vec3> {
-    let uv = v.to_unit();
-    let dt = Vec3::dot(uv, n);
-    let discriminant = 1.0 - ni_over_nt * ni_over_nt * (1.0 - dt * dt);
-    if discriminant > 0.0 {
-        Some((uv - n * dt) * ni_over_nt - n * discriminant.sqrt())
-    } else {
-        None
-    }
+pub fn refract(uv: Vec3, n: Vec3, n1_over_n2: FloatTy) -> Vec3 {
+    let cos_theta = Vec3::dot(-uv, n);
+    let r_out_parallel = (uv + n * cos_theta) * n1_over_n2;
+    let r_out_perp = n * -(1.0 - r_out_parallel.length_squared()).sqrt();
+    r_out_parallel + r_out_perp
 }
 
 pub fn schlick(cos: FloatTy, reflective_index: FloatTy) -> FloatTy {

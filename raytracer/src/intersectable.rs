@@ -12,7 +12,37 @@ pub struct IntersectionRecord {
     pub normal: Vec3,
     pub u: FloatTy,
     pub v: FloatTy,
+    pub front_face: bool,
     pub material: Arc<dyn Material>,
+}
+
+impl IntersectionRecord {
+    pub fn new(
+        ray: &Ray,
+        t: FloatTy,
+        p: Vec3,
+        outward_normal: Vec3,
+        u: FloatTy,
+        v: FloatTy,
+        material: Arc<dyn Material>,
+    ) -> Self {
+        let front_face = Vec3::dot(ray.direction, outward_normal) < 0.0;
+        let normal = if front_face {
+            outward_normal
+        } else {
+            -outward_normal
+        };
+
+        IntersectionRecord {
+            t,
+            p,
+            normal,
+            u,
+            v,
+            front_face,
+            material,
+        }
+    }
 }
 
 pub trait Intersectable: Sync + Send {

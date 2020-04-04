@@ -39,15 +39,15 @@ impl Intersectable for Plane {
         let t = Vec3::dot(self.point - ray.origin, self.normal) / denominator;
         if utils::is_in_range(t, tmin, tmax) {
             let p = ray.point_at_parameter(t);
-            Some(IntersectionRecord {
+            Some(IntersectionRecord::new(
+                ray,
                 t,
                 p,
-                // TODO: fix this
-                u: 0.0,
-                v: 0.0,
-                normal: self.normal,
-                material: self.material.clone(),
-            })
+                self.normal,
+                0.0,
+                0.0,
+                self.material.clone(),
+            ))
         } else {
             None
         }
