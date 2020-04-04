@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use crate::intersectable::{Intersectable, IntersectionRecord};
+use crate::hittable::{HitRecord, Hittable};
 use crate::material::Material;
 use crate::ray::Ray;
 use crate::utils;
@@ -32,13 +32,8 @@ impl Sphere {
     }
 }
 
-impl Intersectable for Sphere {
-    fn is_intersected_by(
-        &self,
-        ray: &Ray,
-        tmin: FloatTy,
-        tmax: Option<FloatTy>,
-    ) -> Option<IntersectionRecord> {
+impl Hittable for Sphere {
+    fn is_hit_by(&self, ray: &Ray, tmin: FloatTy, tmax: Option<FloatTy>) -> Option<HitRecord> {
         let oc = ray.origin - self.center;
         let a = Vec3::dot(ray.direction, ray.direction);
         let b = Vec3::dot(oc, ray.direction) * 2.0;
@@ -53,7 +48,7 @@ impl Intersectable for Sphere {
         if utils::is_in_range(t1, tmin, tmax) {
             let p = ray.point_at_parameter(t1);
             let (u, v) = Sphere::compute_uv(p);
-            return Some(IntersectionRecord::new(
+            return Some(HitRecord::new(
                 ray,
                 t1,
                 p,
@@ -68,7 +63,7 @@ impl Intersectable for Sphere {
         if utils::is_in_range(t2, tmin, tmax) {
             let p = ray.point_at_parameter(t2);
             let (u, v) = Sphere::compute_uv(p);
-            return Some(IntersectionRecord::new(
+            return Some(HitRecord::new(
                 ray,
                 t2,
                 p,

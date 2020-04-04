@@ -11,9 +11,9 @@ use rand;
 use rand::prelude::*;
 use threadpool::ThreadPool;
 
+use raytracer::hittable::{Plane, Sphere};
 use raytracer::material::{Dielectric, Lambertian, Metal};
-use raytracer::{self, Camera, Color, FloatTy, Vec3};
-use raytracer::{Intersectable, Plane, Sphere};
+use raytracer::{self, Camera, Color, FloatTy, Hittable, Vec3};
 
 mod image;
 mod scene_description;
@@ -37,7 +37,7 @@ pub struct PresetConfig {
 
 fn compute_pixel(
     camera: &Camera,
-    objects: &[Box<dyn Intersectable>],
+    objects: &[Box<dyn Hittable>],
     u: FloatTy,
     v: FloatTy,
     max_depth: usize,
@@ -84,7 +84,7 @@ fn default_scene_builder() -> SceneDescription {
         background: Some(Vec3::all(0.1)),
     };
 
-    let mut objects: Vec<Box<dyn Intersectable>> = vec![Box::new(Plane::new(
+    let mut objects: Vec<Box<dyn Hittable>> = vec![Box::new(Plane::new(
         Vec3::all(0.0),
         Vec3::new(0.0, 1.0, 0.0),
         Arc::new(Lambertian::new(Vec3::all(0.5))),

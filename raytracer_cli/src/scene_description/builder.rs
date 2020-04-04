@@ -5,16 +5,16 @@ use maplit::hashmap;
 
 use super::{creators, SceneDescription, SceneObject, SceneObjectKind, SceneObjectOrIdentifier};
 use crate::PresetConfig;
-use raytracer::Intersectable;
+use raytracer::Hittable;
 
 #[derive(Default)]
 pub struct SceneDescriptionBuilder {
     variables: HashMap<String, SceneObject>,
-    declarations: Vec<Box<dyn Intersectable>>,
+    declarations: Vec<Box<dyn Hittable>>,
     presets: HashMap<String, PresetConfig>,
 }
 
-type DeclCreatorFn = fn(params: HashMap<String, SceneObject>) -> Box<dyn Intersectable>;
+type DeclCreatorFn = fn(params: HashMap<String, SceneObject>) -> Box<dyn Hittable>;
 type BuildCreatorFn = fn(params: HashMap<String, SceneObject>) -> SceneObject;
 
 lazy_static! {

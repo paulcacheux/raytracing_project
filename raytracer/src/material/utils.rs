@@ -38,3 +38,21 @@ pub fn random_unit_hemisphere<R: Rng>(rng: &mut R, normal: Vec3) -> Vec3 {
     )
     .to_unit()
 }
+
+pub fn fmin(a: FloatTy, b: FloatTy) -> FloatTy {
+    if a <= b {
+        a
+    } else {
+        b
+    }
+}
+
+/*
+pub fn fmax(a: FloatTy, b: FloatTy) -> FloatTy {
+    if a >= b {
+        a
+    } else {
+        b
+    }
+}
+*/

@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use crate::intersectable::{Intersectable, IntersectionRecord};
+use crate::hittable::{HitRecord, Hittable};
 use crate::material::Material;
 use crate::ray::Ray;
 use crate::utils;
@@ -24,13 +24,8 @@ impl Plane {
     }
 }
 
-impl Intersectable for Plane {
-    fn is_intersected_by(
-        &self,
-        ray: &Ray,
-        tmin: FloatTy,
-        tmax: Option<FloatTy>,
-    ) -> Option<IntersectionRecord> {
+impl Hittable for Plane {
+    fn is_hit_by(&self, ray: &Ray, tmin: FloatTy, tmax: Option<FloatTy>) -> Option<HitRecord> {
         let denominator = Vec3::dot(ray.direction, self.normal);
         if denominator.abs() <= std::f32::EPSILON {
             return None;
@@ -39,7 +34,7 @@ impl Intersectable for Plane {
         let t = Vec3::dot(self.point - ray.origin, self.normal) / denominator;
         if utils::is_in_range(t, tmin, tmax) {
             let p = ray.point_at_parameter(t);
-            Some(IntersectionRecord::new(
+            Some(HitRecord::new(
                 ray,
                 t,
                 p,

@@ -1,5 +1,6 @@
 use super::{Material, MaterialScatter};
-use crate::{FloatTy, IntersectionRecord, Ray, Vec3};
+use crate::hittable::HitRecord;
+use crate::{FloatTy, Ray, Vec3};
 
 #[derive(Debug, Clone)]
 pub struct Light {
@@ -19,7 +20,7 @@ impl Light {
 }
 
 impl Material for Light {
-    fn scatter(&self, _: &Ray, _: &IntersectionRecord) -> Option<MaterialScatter> {
+    fn scatter(&self, _: &Ray, _: &HitRecord) -> Option<MaterialScatter> {
         Some(MaterialScatter {
             attenuation: Vec3::all(0.0),
             scattered: None,

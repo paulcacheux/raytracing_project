@@ -1,4 +1,4 @@
-use crate::intersectable::IntersectionRecord;
+use crate::hittable::HitRecord;
 use crate::ray::Ray;
 use crate::vec3::Vec3;
 use crate::FloatTy;
@@ -20,7 +20,7 @@ pub struct MaterialScatter {
 }
 
 pub trait Material: Send + Sync + std::fmt::Debug {
-    fn scatter(&self, ray: &Ray, record: &IntersectionRecord) -> Option<MaterialScatter>;
+    fn scatter(&self, ray: &Ray, record: &HitRecord) -> Option<MaterialScatter>;
     fn emit(&self, _u: FloatTy, _v: FloatTy, _point: Vec3) -> Vec3 {
         Vec3::all(0.0)
     }

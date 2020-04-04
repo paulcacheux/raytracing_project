@@ -1,5 +1,6 @@
 use super::{utils, Material, MaterialScatter};
-use crate::{FloatTy, IntersectionRecord, Ray, Vec3};
+use crate::hittable::HitRecord;
+use crate::{FloatTy, Ray, Vec3};
 
 use rand_distr::{Distribution, UnitSphere};
 
@@ -19,7 +20,7 @@ impl Metal {
 }
 
 impl Material for Metal {
-    fn scatter(&self, ray: &Ray, record: &IntersectionRecord) -> Option<MaterialScatter> {
+    fn scatter(&self, ray: &Ray, record: &HitRecord) -> Option<MaterialScatter> {
         let mut rng = rand::thread_rng();
         let reflected = utils::reflect(ray.direction.to_unit(), record.normal);
         if Vec3::dot(reflected, record.normal) > 0.0 {

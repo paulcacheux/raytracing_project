@@ -5,8 +5,13 @@ use crate::ray::Ray;
 use crate::vec3::Vec3;
 use crate::FloatTy;
 
+mod plane;
+mod sphere;
+pub use plane::*;
+pub use sphere::*;
+
 #[derive(Debug, Clone)]
-pub struct IntersectionRecord {
+pub struct HitRecord {
     pub t: FloatTy,
     pub p: Vec3,
     pub normal: Vec3,
@@ -16,7 +21,7 @@ pub struct IntersectionRecord {
     pub material: Arc<dyn Material>,
 }
 
-impl IntersectionRecord {
+impl HitRecord {
     pub fn new(
         ray: &Ray,
         t: FloatTy,
@@ -33,7 +38,7 @@ impl IntersectionRecord {
             -outward_normal
         };
 
-        IntersectionRecord {
+        HitRecord {
             t,
             p,
             normal,
@@ -45,29 +50,19 @@ impl IntersectionRecord {
     }
 }
 
-pub trait Intersectable: Sync + Send {
-    fn is_intersected_by(
-        &self,
-        ray: &Ray,
-        tmin: FloatTy,
-        tmax: Option<FloatTy>,
-    ) -> Option<IntersectionRecord>;
+pub trait Hittable: Sync + Send {
+    fn is_hit_by(&self, ray: &Ray, tmin: FloatTy, tmax: Option<FloatTy>) -> Option<HitRecord>;
 }
 
-pub type IntersectableList = Vec<Box<dyn Intersectable>>;
+pub type HittableList = Vec<Box<dyn Hittable>>;
 
-impl Intersectable for &[Box<dyn Intersectable>] {
-    fn is_intersected_by(
-        &self,
-        ray: &Ray,
-        tmin: FloatTy,
-        tmax: Option<FloatTy>,
-    ) -> Option<IntersectionRecord> {
+impl Hittable for &[Box<dyn Hittable>] {
+    fn is_hit_by(&self, ray: &Ray, tmin: FloatTy, tmax: Option<FloatTy>) -> Option<HitRecord> {
         let mut current_closest = tmax;
         let mut final_record = None;
 
         for item in *self {
-            if let Some(record) = item.is_intersected_by(ray, tmin, current_closest) {
+            if let Some(record) = item.is_hit_by(ray, tmin, current_closest) {
                 current_closest = Some(record.t);
                 final_record = Some(record);
             }
@@ -76,3 +71,15 @@ impl Intersectable for &[Box<dyn Intersectable>] {
         final_record
     }
 }
+
+/*
+pub trait Intersectable: Sync + Send {
+    fn is_hit_by(&self, ray: &Ray, tmin: FloatTy, tmax: Option<FloatTy>) -> bool;
+}
+
+impl<T: Intersectable> Hittable for T {
+    fn is_hit_by(&self, ray: &Ray, tmin: FloatTy, tmax: Option<FloatTy>) -> bool {
+        self.is_intersected_by(ray, tmin, tmax).is_some()
+    }
+}
+*/

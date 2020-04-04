@@ -1,5 +1,6 @@
 use super::{utils, Material, MaterialScatter};
-use crate::{IntersectionRecord, Ray, Vec3};
+use crate::hittable::HitRecord;
+use crate::{Ray, Vec3};
 
 #[derive(Debug, Clone)]
 pub struct Lambertian {
@@ -13,7 +14,7 @@ impl Lambertian {
 }
 
 impl Material for Lambertian {
-    fn scatter(&self, _: &Ray, record: &IntersectionRecord) -> Option<MaterialScatter> {
+    fn scatter(&self, _: &Ray, record: &HitRecord) -> Option<MaterialScatter> {
         let mut rng = rand::thread_rng();
         let new_direction = utils::random_unit_hemisphere(&mut rng, record.normal);
 

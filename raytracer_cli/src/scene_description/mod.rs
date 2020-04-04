@@ -3,7 +3,7 @@ use std::sync::Arc;
 
 use crate::PresetConfig;
 use raytracer::material::Material;
-use raytracer::{Intersectable, Vec3};
+use raytracer::{Hittable, Vec3};
 
 pub mod builder;
 mod creators;
@@ -39,6 +39,6 @@ pub enum SceneObjectOrIdentifier {
 }
 
 pub struct SceneDescription {
-    pub declarations: Vec<Box<dyn Intersectable>>,
+    pub declarations: Vec<Box<dyn Hittable>>,
     pub presets: HashMap<String, PresetConfig>,
 }

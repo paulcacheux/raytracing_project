@@ -4,8 +4,9 @@ use std::sync::Arc;
 use crate::scene_description::{SceneObject, SceneObjectKind};
 use crate::PresetConfig;
 
+use raytracer::hittable::{Plane, Sphere};
 use raytracer::material::{Lambertian, Light, Material, Metal};
-use raytracer::{Intersectable, Plane, Sphere, Vec3};
+use raytracer::{Hittable, Vec3};
 
 pub(crate) fn typecheck_params(
     prototype: &HashMap<String, (SceneObjectKind, bool)>,
@@ -77,7 +78,7 @@ pub(crate) fn preset_creator(params: HashMap<String, SceneObject>) -> PresetConf
     }
 }
 
-pub(crate) fn sphere_creator(params: HashMap<String, SceneObject>) -> Box<dyn Intersectable> {
+pub(crate) fn sphere_creator(params: HashMap<String, SceneObject>) -> Box<dyn Hittable> {
     let center: Vec3 = unwrap_scene_object!(params; "center"; SceneObject::Vec3(v) => *v);
     let radius: f32 = unwrap_scene_object!(params; "radius"; SceneObject::Float(f) => *f);
     let material: Arc<dyn Material> =
@@ -86,7 +87,7 @@ pub(crate) fn sphere_creator(params: HashMap<String, SceneObject>) -> Box<dyn In
     Box::new(Sphere::new(center, radius, material))
 }
 
-pub(crate) fn plane_creator(params: HashMap<String, SceneObject>) -> Box<dyn Intersectable> {
+pub(crate) fn plane_creator(params: HashMap<String, SceneObject>) -> Box<dyn Hittable> {
     let point: Vec3 = unwrap_scene_object!(params; "point"; SceneObject::Vec3(v) => *v);
     let normal: Vec3 = unwrap_scene_object!(params; "normal"; SceneObject::Vec3(v) => *v);
     let material: Arc<dyn Material> =

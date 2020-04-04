@@ -1,10 +1,8 @@
 mod camera;
 mod color;
-mod intersectable;
+pub mod hittable;
 pub mod material;
-mod plane;
 mod ray;
-mod sphere;
 mod utils;
 mod vec3;
 
@@ -12,20 +10,18 @@ pub type FloatTy = f32;
 
 pub use crate::camera::*;
 pub use crate::color::*;
-pub use crate::intersectable::*;
-pub use crate::plane::*;
+pub use crate::hittable::Hittable;
 pub use crate::ray::*;
-pub use crate::sphere::*;
 pub use crate::vec3::*;
 
 pub fn compute_color(
-    objects: &[Box<dyn Intersectable>],
+    objects: &[Box<dyn Hittable>],
     ray: Ray,
     depth: usize,
     max_depth: usize,
     background: Vec3,
 ) -> Vec3 {
-    if let Some(record) = objects.is_intersected_by(&ray, 0.01, None) {
+    if let Some(record) = objects.is_hit_by(&ray, 0.01, None) {
         let emitted = record.material.emit(record.u, record.v, record.p);
 
         if depth < max_depth {
@@ -41,6 +37,10 @@ pub fn compute_color(
                     emitted
                 };
             }
+            let x = 1.0f32;
+            let y = 2.0f32;
+
+            assert_eq!(x.max(y), y);
         }
         emitted
     } else {
