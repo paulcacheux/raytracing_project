@@ -1,3 +1,8 @@
+use rand::{
+    distributions::{Distribution, Standard},
+    Rng,
+};
+
 use crate::FloatTy;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -126,5 +131,11 @@ impl std::ops::Div<FloatTy> for Vec3 {
 impl std::ops::DivAssign<FloatTy> for Vec3 {
     fn div_assign(&mut self, other: FloatTy) {
         *self = *self / other
+    }
+}
+
+impl Distribution<Vec3> for Standard {
+    fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> Vec3 {
+        Vec3::new(rng.gen(), rng.gen(), rng.gen())
     }
 }

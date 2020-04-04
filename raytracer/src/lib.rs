@@ -38,6 +38,6 @@ pub fn compute_color(objects: &[Box<dyn Intersectable>], ray: Ray, depth: usize)
         }
         emitted
     } else {
-        Vec3::all(0.0)
+        Vec3::all(0.1)
     }
 }

@@ -5,11 +5,14 @@ use std::sync::Arc;
 
 use clap::{App, Arg};
 use lalrpop_util::lalrpop_mod;
+use maplit::hashmap;
 use rand;
 use rand::prelude::*;
 use threadpool::ThreadPool;
 
-use raytracer::{self, Camera, Color, FloatTy, Intersectable, Vec3};
+use raytracer::{self, Camera, Color, FloatTy, Vec3};
+use raytracer::{Dielectric, Lambertian, Metal};
+use raytracer::{Intersectable, Plane, Sphere};
 
 mod image;
 mod scene_description;
@@ -51,6 +54,90 @@ fn parse_input_file(path: &str) -> io::Result<SceneDescription> {
     Ok(scene)
 }
 
+fn default_scene_builder() -> SceneDescription {
+    let preset = PresetConfig {
+        width: 1200,
+        height: 800,
+        look_from: Vec3::new(13.0, 2.0, 3.0),
+        look_at: Vec3::new(0.0, 0.0, 0.0),
+        up: Vec3::new(0.0, 1.0, 0.0),
+        vfov: 20.0,
+        sample_count: 128,
+    };
+
+    let mut objects: Vec<Box<dyn Intersectable>> = vec![Box::new(Plane::new(
+        Vec3::all(0.0),
+        Vec3::new(0.0, 1.0, 0.0),
+        Arc::new(Lambertian::new(Vec3::all(0.5))),
+    ))];
+
+    let mut rng = rand::thread_rng();
+
+    for a in -11..11 {
+        for b in -11..11 {
+            let center = Vec3::new(
+                a as f32 + 0.9 * rng.gen::<f32>(),
+                0.2,
+                b as f32 + 0.9 * rng.gen::<f32>(),
+            );
+
+            if (center - Vec3::new(4.0, 0.2, 0.0)).length() > 0.9 {
+                let mat: f32 = rng.gen();
+
+                if mat < 0.8 {
+                    let albedo = Vec3::memberwise_product(rng.gen(), rng.gen());
+                    objects.push(Box::new(Sphere::new(
+                        center,
+                        0.2,
+                        Arc::new(Lambertian::new(albedo)),
+                    )));
+                } else if mat < 0.95 {
+                    let albedo = Vec3::new(
+                        rng.gen_range(0.5, 1.0),
+                        rng.gen_range(0.5, 1.0),
+                        rng.gen_range(0.5, 1.0),
+                    );
+                    let fuzz = rng.gen_range(0.0, 0.5);
+                    objects.push(Box::new(Sphere::new(
+                        center,
+                        0.2,
+                        Arc::new(Metal::new(albedo, Some(fuzz))),
+                    )))
+                } else {
+                    objects.push(Box::new(Sphere::new(
+                        center,
+                        0.2,
+                        Arc::new(Dielectric::new(1.5)),
+                    )))
+                }
+            }
+        }
+    }
+
+    objects.push(Box::new(Sphere::new(
+        Vec3::new(0.0, 1.0, 0.0),
+        1.0,
+        Arc::new(Dielectric::new(1.5)),
+    )));
+
+    objects.push(Box::new(Sphere::new(
+        Vec3::new(-4.0, 1.0, 0.0),
+        1.0,
+        Arc::new(Lambertian::new(Vec3::new(0.4, 0.2, 0.1))),
+    )));
+
+    objects.push(Box::new(Sphere::new(
+        Vec3::new(4.0, 1.0, 0.0),
+        1.0,
+        Arc::new(Metal::new(Vec3::new(0.7, 0.6, 0.5), None)),
+    )));
+
+    SceneDescription {
+        presets: hashmap! { "default".into() => preset },
+        declarations: objects,
+    }
+}
+
 fn main() {
     let matches = App::new("Raytracing CLI")
         .version("0.1")
@@ -59,7 +146,6 @@ fn main() {
         .arg(
             Arg::with_name("INPUT")
                 .help("Sets the input description file.")
-                .required(true)
                 .index(1),
         )
         .arg(
@@ -72,8 +158,11 @@ fn main() {
         )
         .get_matches();
 
-    let input_path = matches.value_of("INPUT").unwrap();
-    let scene = parse_input_file(&input_path).unwrap();
+    let scene = if let Some(input_path) = matches.value_of("INPUT") {
+        parse_input_file(&input_path).unwrap()
+    } else {
+        default_scene_builder()
+    };
 
     let objects = Arc::new(scene.declarations);
     let preset_name = matches.value_of("preset").unwrap_or("default");
