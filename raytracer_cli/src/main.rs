@@ -4,6 +4,7 @@ use std::sync::mpsc;
 use std::sync::Arc;
 
 use clap::{App, Arg};
+use indicatif::ProgressBar;
 use lalrpop_util::lalrpop_mod;
 use maplit::hashmap;
 use rand;
@@ -233,8 +234,10 @@ fn main() {
     }
     drop(send);
 
+    let progress_bar = ProgressBar::new((ny * nx) as _);
     for (i, j, color) in recv.into_iter() {
         image.set_pixel(i, j, color);
+        progress_bar.inc(1);
     }
 
     let output_path = "./last_result.png";
