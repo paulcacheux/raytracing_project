@@ -1,4 +1,4 @@
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 
 use lazy_static::lazy_static;
 use maplit::hashmap;
@@ -11,7 +11,7 @@ use raytracer::Intersectable;
 pub struct SceneDescriptionBuilder {
     variables: HashMap<String, SceneObject>,
     declarations: Vec<Box<dyn Intersectable>>,
-    pub(crate) presets: HashMap<String, PresetConfig>,
+    presets: HashMap<String, PresetConfig>,
 }
 
 type DeclCreatorFn = fn(params: HashMap<String, SceneObject>) -> Box<dyn Intersectable>;
@@ -140,7 +140,7 @@ impl SceneDescriptionBuilder {
     pub fn declare(&mut self, creator: String, params: HashMap<String, SceneObjectOrIdentifier>) {
         let params = self.extract_params(params);
         if let Some((proto, creator)) = DECLARABLES.get(&creator) {
-            typecheck_params(proto, &params);
+            creators::typecheck_params(proto, &params);
             let decl = creator(params);
             self.declarations.push(decl);
         } else {
@@ -155,7 +155,7 @@ impl SceneDescriptionBuilder {
     ) -> SceneObject {
         let params = self.extract_params(params);
         if let Some((proto, creator)) = BUILDABLES.get(&creator) {
-            typecheck_params(proto, &params);
+            creators::typecheck_params(proto, &params);
             creator(params)
         } else {
             panic!("NO CREATOR: {}", creator);
@@ -164,34 +164,8 @@ impl SceneDescriptionBuilder {
 
     pub fn add_preset(&mut self, name: String, params: HashMap<String, SceneObjectOrIdentifier>) {
         let params = self.extract_params(params);
-        typecheck_params(&PRESET_FIELDS, &params);
+        creators::typecheck_params(&PRESET_FIELDS, &params);
         let preset = creators::preset_creator(params);
         self.presets.insert(name, preset);
-    }
-}
-
-fn typecheck_params(
-    prototype: &HashMap<String, (SceneObjectKind, bool)>,
-    params: &HashMap<String, SceneObject>,
-) {
-    for (arg_name, (arg_kind, optional)) in prototype {
-        match (optional, params.get(arg_name)) {
-            (_, Some(param)) => {
-                if param.kind() != *arg_kind {
-                    panic!("TYPE MISMATCH: {}", arg_name);
-                }
-            }
-            (true, None) => {
-                panic!("ARG MISSING: {}", arg_name);
-            }
-            (false, None) => {}
-        }
-    }
-
-    // check extraneous params
-    let proto_params: HashSet<&str> = prototype.keys().map(|s| s.as_ref()).collect();
-    let param_names: HashSet<&str> = params.keys().map(|s| s.as_ref()).collect();
-    if !param_names.is_subset(&proto_params) {
-        panic!("EXTRANEOUS PARAMETERS");
     }
 }

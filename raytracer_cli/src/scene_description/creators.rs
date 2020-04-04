@@ -1,10 +1,36 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
 
-use crate::scene_description::SceneObject;
+use crate::scene_description::{SceneObject, SceneObjectKind};
 use crate::PresetConfig;
 
 use raytracer::{Intersectable, Lambertian, Light, Material, Metal, Plane, Sphere, Vec3};
+
+pub(crate) fn typecheck_params(
+    prototype: &HashMap<String, (SceneObjectKind, bool)>,
+    params: &HashMap<String, SceneObject>,
+) {
+    for (arg_name, (arg_kind, optional)) in prototype {
+        match (optional, params.get(arg_name)) {
+            (_, Some(param)) => {
+                if param.kind() != *arg_kind {
+                    panic!("TYPE MISMATCH: {}", arg_name);
+                }
+            }
+            (true, None) => {
+                panic!("ARG MISSING: {}", arg_name);
+            }
+            (false, None) => {}
+        }
+    }
+
+    // check extraneous params
+    let proto_params: HashSet<&str> = prototype.keys().map(|s| s.as_ref()).collect();
+    let param_names: HashSet<&str> = params.keys().map(|s| s.as_ref()).collect();
+    if !param_names.is_subset(&proto_params) {
+        panic!("EXTRANEOUS PARAMETERS");
+    }
+}
 
 macro_rules! unwrap_scene_object {
     ($params:expr; $name:expr; $object_desc:pat => $value:expr) => {
