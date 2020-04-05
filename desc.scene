@@ -81,5 +81,5 @@ preset complete {
     up: vec3(0.0, 1.0, 0.0),
     vfov: 90.0,
     sample_count: 128,
-    max_depth: 1,
+    max_depth: 3,
 };

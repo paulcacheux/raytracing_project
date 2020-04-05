@@ -163,8 +163,8 @@ fn default_scene_builder() -> SceneDescription {
         Arc::new(Metal::new(Vec3::new(0.7, 0.6, 0.5), None)),
     )));
 
-    // let declarations = hittable::build_bvh(objects);
-    let declarations = objects;
+    let declarations = hittable::build_bvh(objects);
+    // let declarations = objects;
 
     SceneDescription {
         presets: hashmap! {
