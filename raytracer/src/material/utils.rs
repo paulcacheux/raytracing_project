@@ -3,10 +3,12 @@ use rand;
 use rand::prelude::*;
 use rand_distr::{Distribution, UnitSphere};
 
+#[inline]
 pub fn reflect(v: Vec3, n: Vec3) -> Vec3 {
     v - n * 2.0 * Vec3::dot(v, n)
 }
 
+#[inline]
 pub fn refract(uv: Vec3, n: Vec3, n1_over_n2: FloatTy) -> Vec3 {
     let cos_theta = Vec3::dot(-uv, n);
     let r_out_parallel = (uv + n * cos_theta) * n1_over_n2;
@@ -14,12 +16,14 @@ pub fn refract(uv: Vec3, n: Vec3, n1_over_n2: FloatTy) -> Vec3 {
     r_out_parallel + r_out_perp
 }
 
+#[inline]
 pub fn schlick(cos: FloatTy, reflective_index: FloatTy) -> FloatTy {
     let r0 = (1.0 - reflective_index) / (1.0 + reflective_index);
     let r0 = r0 * r0;
     r0 + (1.0 - r0) * (1.0 - cos).powi(5)
 }
 
+#[inline]
 pub fn random_unit_hemisphere<R: Rng>(rng: &mut R, normal: Vec3) -> Vec3 {
     let [x, y, z]: [f64; 3] = UnitSphere.sample(rng);
     let v = Vec3::new(x as _, y.abs() as _, z as _).to_unit();
@@ -38,21 +42,3 @@ pub fn random_unit_hemisphere<R: Rng>(rng: &mut R, normal: Vec3) -> Vec3 {
     )
     .to_unit()
 }
-
-pub fn fmin(a: FloatTy, b: FloatTy) -> FloatTy {
-    if a <= b {
-        a
-    } else {
-        b
-    }
-}
-
-/*
-pub fn fmax(a: FloatTy, b: FloatTy) -> FloatTy {
-    if a >= b {
-        a
-    } else {
-        b
-    }
-}
-*/

@@ -1,5 +1,6 @@
 use super::{utils, Material, MaterialScatter};
 use crate::hittable::HitRecord;
+use crate::utils::fmin;
 use crate::{FloatTy, Ray, Vec3};
 
 use rand;
@@ -28,7 +29,7 @@ impl Material for Dielectric {
         };
 
         let uv = ray.direction.to_unit();
-        let cos_theta = utils::fmin(Vec3::dot(-uv, record.normal), 1.0);
+        let cos_theta = fmin(Vec3::dot(-uv, record.normal), 1.0);
         let sin_theta = (1.0 - cos_theta * cos_theta).sqrt();
 
         let reflect_prob = utils::schlick(cos_theta, self.reflective_index);

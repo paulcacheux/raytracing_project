@@ -5,8 +5,12 @@ use crate::ray::Ray;
 use crate::vec3::Vec3;
 use crate::FloatTy;
 
+mod aabb;
+mod bhv;
 mod plane;
 mod sphere;
+pub use aabb::*;
+pub use bhv::*;
 pub use plane::*;
 pub use sphere::*;
 
@@ -52,6 +56,9 @@ impl HitRecord {
 
 pub trait Hittable: Sync + Send {
     fn is_hit_by(&self, ray: &Ray, tmin: FloatTy, tmax: Option<FloatTy>) -> Option<HitRecord>;
+    fn bounding_box(&self) -> Option<AABB> {
+        None
+    }
 }
 
 pub type HittableList = Vec<Box<dyn Hittable>>;
@@ -70,16 +77,36 @@ impl Hittable for &[Box<dyn Hittable>] {
 
         final_record
     }
-}
 
-/*
-pub trait Intersectable: Sync + Send {
-    fn is_hit_by(&self, ray: &Ray, tmin: FloatTy, tmax: Option<FloatTy>) -> bool;
-}
+    fn bounding_box(&self) -> Option<AABB> {
+        if self.is_empty() {
+            return None;
+        }
 
-impl<T: Intersectable> Hittable for T {
-    fn is_hit_by(&self, ray: &Ray, tmin: FloatTy, tmax: Option<FloatTy>) -> bool {
-        self.is_intersected_by(ray, tmin, tmax).is_some()
+        let mut res = if let Some(bb) = self[0].bounding_box() {
+            bb.clone()
+        } else {
+            return None;
+        };
+
+        for obj in &self[1..] {
+            if let Some(bb) = obj.bounding_box() {
+                res = AABB::surrounding(res, bb);
+            } else {
+                return None;
+            }
+        }
+
+        Some(res)
     }
 }
-*/
+
+pub trait HitCheckable: Sync + Send {
+    fn check_hit_by(&self, ray: &Ray, tmin: FloatTy, tmax: Option<FloatTy>) -> bool;
+}
+
+impl<T: Hittable> HitCheckable for T {
+    fn check_hit_by(&self, ray: &Ray, tmin: FloatTy, tmax: Option<FloatTy>) -> bool {
+        self.is_hit_by(ray, tmin, tmax).is_some()
+    }
+}

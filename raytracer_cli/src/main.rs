@@ -11,7 +11,7 @@ use rand;
 use rand::prelude::*;
 use threadpool::ThreadPool;
 
-use raytracer::hittable::{Plane, Sphere};
+use raytracer::hittable::{self, Plane, Sphere};
 use raytracer::material::{Dielectric, Lambertian, Metal};
 use raytracer::{self, Camera, Color, FloatTy, Hittable, Vec3};
 
@@ -68,6 +68,18 @@ fn default_scene_builder() -> SceneDescription {
         up: Vec3::new(0.0, 1.0, 0.0),
         vfov: 20.0,
         sample_count: 1,
+        max_depth: 3,
+        background: Some(Vec3::all(0.1)),
+    };
+
+    let test_preset = PresetConfig {
+        width: 900,
+        height: 600,
+        look_from: Vec3::new(13.0, 2.0, 3.0),
+        look_at: Vec3::new(0.0, 0.0, 0.0),
+        up: Vec3::new(0.0, 1.0, 0.0),
+        vfov: 20.0,
+        sample_count: 12,
         max_depth: 3,
         background: Some(Vec3::all(0.1)),
     };
@@ -151,9 +163,15 @@ fn default_scene_builder() -> SceneDescription {
         Arc::new(Metal::new(Vec3::new(0.7, 0.6, 0.5), None)),
     )));
 
+    let declarations = hittable::build_bvh(objects);
+
     SceneDescription {
-        presets: hashmap! { "default".into() => default_preset, "complete".into() => complete_preset },
-        declarations: objects,
+        presets: hashmap! {
+            "default".into() => default_preset,
+            "complete".into() => complete_preset,
+            "test".into() => test_preset
+        },
+        declarations,
     }
 }
 

@@ -25,10 +25,12 @@ impl Vec3 {
         Vec3::new(x, x, x)
     }
 
+    #[inline]
     pub fn dot(a: Self, b: Self) -> FloatTy {
         a.x * b.x + a.y * b.y + a.z * b.z
     }
 
+    #[inline]
     pub fn cross(a: Self, b: Self) -> Self {
         Vec3::new(
             a.y * b.z - a.z * b.y,
@@ -37,18 +39,22 @@ impl Vec3 {
         )
     }
 
+    #[inline]
     pub fn memberwise_product(a: Self, b: Self) -> Self {
         Vec3::new(a.x * b.x, a.y * b.y, a.z * b.z)
     }
 
+    #[inline]
     pub fn length_squared(&self) -> FloatTy {
         self.x * self.x + self.y * self.y + self.z * self.z
     }
 
+    #[inline]
     pub fn length(&self) -> FloatTy {
         self.length_squared().sqrt()
     }
 
+    #[inline]
     pub fn to_unit(self) -> Self {
         self / self.length()
     }

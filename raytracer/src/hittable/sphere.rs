@@ -1,11 +1,9 @@
 use std::sync::Arc;
 
-use crate::hittable::{HitRecord, Hittable};
+use super::{HitRecord, Hittable, AABB};
 use crate::material::Material;
-use crate::ray::Ray;
 use crate::utils;
-use crate::vec3::Vec3;
-use crate::FloatTy;
+use crate::{FloatTy, Ray, Vec3};
 
 #[derive(Debug, Clone)]
 pub struct Sphere {
@@ -75,5 +73,12 @@ impl Hittable for Sphere {
         } else {
             None
         }
+    }
+
+    fn bounding_box(&self) -> Option<AABB> {
+        Some(AABB {
+            min: self.center - Vec3::all(self.radius),
+            max: self.center + Vec3::all(self.radius),
+        })
     }
 }
