@@ -6,7 +6,7 @@ use rand::prelude::*;
 
 use raytracer::hittable::{self, Plane, Sphere};
 use raytracer::material::{Dielectric, Lambertian, Metal};
-use raytracer::texture::{CheckerTexture, PerlinTexture, SolidTexture};
+use raytracer::texture::{CheckerTexture, ImageTexture, PerlinTexture, SolidTexture};
 use raytracer::{self, FloatTy, Hittable, Vec3};
 
 use crate::scene_description::SceneDescription;
@@ -178,7 +178,9 @@ pub fn two_spheres() -> SceneDescription {
         Arc::new(SolidTexture::new(Vec3::all(0.9))),
         20.0,
     ));*/
-    let ball_texture = Arc::new(PerlinTexture::new(10.0));
+    // let ball_texture = Arc::new(PerlinTexture::new(10.0));
+
+    let earth_texture = Arc::new(ImageTexture::open("./textures/earthmap.jpg").unwrap());
 
     let ground_texture = Arc::new(CheckerTexture::new(
         Arc::new(SolidTexture::new(Vec3::new(0.2, 0.3, 0.1))),
@@ -196,7 +198,7 @@ pub fn two_spheres() -> SceneDescription {
     objects.push(Box::new(Sphere::new(
         Vec3::new(0.0, 1.0, 0.0),
         1.0,
-        Arc::new(Lambertian::new(ball_texture)),
+        Arc::new(Lambertian::new(earth_texture)),
     )));
 
     let declarations = objects;
