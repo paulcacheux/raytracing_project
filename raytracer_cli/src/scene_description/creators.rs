@@ -98,7 +98,7 @@ pub(crate) fn plane_creator(params: HashMap<String, SceneObject>) -> Box<dyn Hit
 
 pub(crate) fn lambertian_creator(params: HashMap<String, SceneObject>) -> SceneObject {
     let albedo: Vec3 = unwrap_scene_object!(params; "albedo"; SceneObject::Vec3(v) => *v);
-    SceneObject::Material(Arc::new(Lambertian::new(albedo)))
+    SceneObject::Material(Arc::new(Lambertian::from_solid_color(albedo)))
 }
 
 pub(crate) fn light_creator(params: HashMap<String, SceneObject>) -> SceneObject {

@@ -22,9 +22,10 @@ impl Sphere {
         }
     }
 
-    fn compute_uv(p: Vec3) -> (FloatTy, FloatTy) {
-        let phi = p.z.atan2(p.x);
-        let theta = p.y.asin();
+    fn compute_uv(&self, p: Vec3) -> (FloatTy, FloatTy) {
+        let d = p - self.center;
+        let phi = d.z.atan2(d.x);
+        let theta = d.y.asin();
         let u = 1.0 - (phi + fconsts::PI) / (2.0 * fconsts::PI);
         let v = (theta + fconsts::FRAC_PI_2) / fconsts::PI;
         (u, v)
@@ -46,7 +47,7 @@ impl Hittable for Sphere {
         let t1 = (-b - discriminant.sqrt()) / (2.0 * a);
         if utils::is_in_range(t1, tmin, tmax) {
             let p = ray.point_at_parameter(t1);
-            let (u, v) = Sphere::compute_uv(p);
+            let (u, v) = self.compute_uv(p);
             return Some(HitRecord::new(
                 ray,
                 t1,
@@ -61,7 +62,7 @@ impl Hittable for Sphere {
         let t2 = (-b + discriminant.sqrt()) / (2.0 * a);
         if utils::is_in_range(t2, tmin, tmax) {
             let p = ray.point_at_parameter(t2);
-            let (u, v) = Sphere::compute_uv(p);
+            let (u, v) = self.compute_uv(p);
             return Some(HitRecord::new(
                 ray,
                 t2,

@@ -3,6 +3,7 @@ mod color;
 pub mod hittable;
 pub mod material;
 mod ray;
+pub mod texture;
 mod utils;
 mod vec3;
 
@@ -12,6 +13,7 @@ pub use crate::camera::*;
 pub use crate::color::*;
 pub use crate::hittable::Hittable;
 pub use crate::ray::*;
+pub use crate::texture::Texture;
 pub use crate::vec3::*;
 
 pub fn compute_color(

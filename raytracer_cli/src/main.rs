@@ -6,15 +6,13 @@ use std::sync::Arc;
 use clap::{App, Arg};
 use indicatif::{ProgressBar, ProgressStyle};
 use lalrpop_util::lalrpop_mod;
-use maplit::hashmap;
 use rand;
 use rand::prelude::*;
 use threadpool::ThreadPool;
 
-use raytracer::hittable::{self, Plane, Sphere};
-use raytracer::material::{Dielectric, Lambertian, Metal};
 use raytracer::{self, Camera, Color, FloatTy, Hittable, Vec3};
 
+mod default_scene;
 mod image;
 mod scene_description;
 lalrpop_mod!(pub grammar);
@@ -59,123 +57,6 @@ fn parse_input_file(path: &str) -> io::Result<SceneDescription> {
     Ok(scene)
 }
 
-fn default_scene_builder() -> SceneDescription {
-    let default_preset = PresetConfig {
-        width: 600,
-        height: 400,
-        look_from: Vec3::new(13.0, 2.0, 3.0),
-        look_at: Vec3::new(0.0, 0.0, 0.0),
-        up: Vec3::new(0.0, 1.0, 0.0),
-        vfov: 20.0,
-        sample_count: 1,
-        max_depth: 3,
-        background: Some(Vec3::all(0.1)),
-    };
-
-    let test_preset = PresetConfig {
-        width: 900,
-        height: 600,
-        look_from: Vec3::new(13.0, 2.0, 3.0),
-        look_at: Vec3::new(0.0, 0.0, 0.0),
-        up: Vec3::new(0.0, 1.0, 0.0),
-        vfov: 20.0,
-        sample_count: 12,
-        max_depth: 3,
-        background: Some(Vec3::all(0.1)),
-    };
-
-    let complete_preset = PresetConfig {
-        width: 1200,
-        height: 800,
-        look_from: Vec3::new(13.0, 2.0, 3.0),
-        look_at: Vec3::new(0.0, 0.0, 0.0),
-        up: Vec3::new(0.0, 1.0, 0.0),
-        vfov: 20.0,
-        sample_count: 128,
-        max_depth: 10,
-        background: Some(Vec3::all(0.1)),
-    };
-
-    let mut objects: Vec<Box<dyn Hittable>> = vec![Box::new(Plane::new(
-        Vec3::all(0.0),
-        Vec3::new(0.0, 1.0, 0.0),
-        Arc::new(Lambertian::new(Vec3::all(0.5))),
-    ))];
-
-    let mut rng = rand::thread_rng();
-
-    for a in -11..11 {
-        for b in -11..11 {
-            let center = Vec3::new(
-                a as FloatTy + 0.9 * rng.gen::<FloatTy>(),
-                0.2,
-                b as FloatTy + 0.9 * rng.gen::<FloatTy>(),
-            );
-
-            if (center - Vec3::new(4.0, 0.2, 0.0)).length() > 0.9 {
-                let mat: FloatTy = rng.gen();
-
-                if mat < 0.8 {
-                    let albedo = Vec3::memberwise_product(rng.gen(), rng.gen());
-                    objects.push(Box::new(Sphere::new(
-                        center,
-                        0.2,
-                        Arc::new(Lambertian::new(albedo)),
-                    )));
-                } else if mat < 0.95 {
-                    let albedo = Vec3::new(
-                        rng.gen_range(0.5, 1.0),
-                        rng.gen_range(0.5, 1.0),
-                        rng.gen_range(0.5, 1.0),
-                    );
-                    let fuzz = rng.gen_range(0.0, 0.5);
-                    objects.push(Box::new(Sphere::new(
-                        center,
-                        0.2,
-                        Arc::new(Metal::new(albedo, Some(fuzz))),
-                    )))
-                } else {
-                    objects.push(Box::new(Sphere::new(
-                        center,
-                        0.2,
-                        Arc::new(Dielectric::new(1.5)),
-                    )))
-                }
-            }
-        }
-    }
-
-    objects.push(Box::new(Sphere::new(
-        Vec3::new(0.0, 1.0, 0.0),
-        1.0,
-        Arc::new(Dielectric::new(1.5)),
-    )));
-
-    objects.push(Box::new(Sphere::new(
-        Vec3::new(-4.0, 1.0, 0.0),
-        1.0,
-        Arc::new(Lambertian::new(Vec3::new(0.4, 0.2, 0.1))),
-    )));
-
-    objects.push(Box::new(Sphere::new(
-        Vec3::new(4.0, 1.0, 0.0),
-        1.0,
-        Arc::new(Metal::new(Vec3::new(0.7, 0.6, 0.5), None)),
-    )));
-
-    let declarations = hittable::build_bvh(objects);
-    // let declarations = objects;
-
-    SceneDescription {
-        presets: hashmap! {
-            "default".into() => default_preset,
-            "complete".into() => complete_preset,
-            "test".into() => test_preset
-        },
-        declarations,
-    }
-}
-
 fn main() {
     let matches = App::new("Raytracing CLI")
         .version("0.1")
@@ -199,7 +80,7 @@ fn main() {
     let scene = if let Some(input_path) = matches.value_of("INPUT") {
         parse_input_file(&input_path).unwrap()
     } else {
-        default_scene_builder()
+        default_scene::two_spheres()
     };
 
     let objects = Arc::new(scene.declarations);
