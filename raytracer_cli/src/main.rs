@@ -13,11 +13,11 @@ use threadpool::ThreadPool;
 use raytracer::{self, Camera, Color, FloatTy, Hittable, Vec3};
 
 mod default_scene;
-mod image;
+mod pixel_data;
 mod scene_description;
 lalrpop_mod!(pub grammar);
 
-use image::Image;
+use pixel_data::PixelData;
 use scene_description::{SceneDescription, SceneDescriptionBuilder};
 
 #[derive(Debug)]
@@ -104,7 +104,7 @@ fn main() {
 
     let sample_count = preset.sample_count;
 
-    let mut image = Image::new(nx, ny);
+    let mut image = PixelData::new(nx, ny);
 
     let (send, recv) = mpsc::channel();
     let pool = ThreadPool::new(16);
@@ -147,5 +147,5 @@ fn main() {
     }
 
     let output_path = "./last_result.png";
-    image.output_as_png(output_path).unwrap();
+    image.save(output_path).unwrap();
 }
