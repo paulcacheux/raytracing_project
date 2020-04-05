@@ -6,7 +6,7 @@ mod ray;
 mod utils;
 mod vec3;
 
-pub type FloatTy = f32;
+pub type FloatTy = f64;
 
 pub use crate::camera::*;
 pub use crate::color::*;
@@ -46,4 +46,11 @@ pub fn compute_color(
     } else {
         background
     }
+}
+
+pub mod fconsts {
+    use super::FloatTy;
+    pub const PI: FloatTy = std::f64::consts::PI as _;
+    pub const EPSILON: FloatTy = std::f32::EPSILON as _;
+    pub const FRAC_PI_2: FloatTy = std::f64::consts::FRAC_PI_2 as _;
 }

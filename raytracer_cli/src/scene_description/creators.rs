@@ -6,7 +6,7 @@ use crate::PresetConfig;
 
 use raytracer::hittable::{Plane, Sphere};
 use raytracer::material::{Lambertian, Light, Material, Metal};
-use raytracer::{Hittable, Vec3};
+use raytracer::{FloatTy, Hittable, Vec3};
 
 pub(crate) fn typecheck_params(
     prototype: &HashMap<String, (SceneObjectKind, bool)>,
@@ -80,7 +80,7 @@ pub(crate) fn preset_creator(params: HashMap<String, SceneObject>) -> PresetConf
 
 pub(crate) fn sphere_creator(params: HashMap<String, SceneObject>) -> Box<dyn Hittable> {
     let center: Vec3 = unwrap_scene_object!(params; "center"; SceneObject::Vec3(v) => *v);
-    let radius: f32 = unwrap_scene_object!(params; "radius"; SceneObject::Float(f) => *f);
+    let radius: FloatTy = unwrap_scene_object!(params; "radius"; SceneObject::Float(f) => *f);
     let material: Arc<dyn Material> =
         unwrap_scene_object!(params; "material"; SceneObject::Material(m) => m.clone());
 
@@ -110,6 +110,6 @@ pub(crate) fn light_creator(params: HashMap<String, SceneObject>) -> SceneObject
 
 pub(crate) fn metal_creator(params: HashMap<String, SceneObject>) -> SceneObject {
     let albedo: Vec3 = unwrap_scene_object!(params; "albedo"; SceneObject::Vec3(v) => *v);
-    let fuzz: Option<f32> = optional_scene_object!(params; "fuzz"; SceneObject::Float(f) => *f);
+    let fuzz: Option<FloatTy> = optional_scene_object!(params; "fuzz"; SceneObject::Float(f) => *f);
     SceneObject::Material(Arc::new(Metal::new(albedo, fuzz)))
 }

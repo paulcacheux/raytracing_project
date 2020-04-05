@@ -25,20 +25,11 @@ pub fn schlick(cos: FloatTy, reflective_index: FloatTy) -> FloatTy {
 
 #[inline]
 pub fn random_unit_hemisphere<R: Rng>(rng: &mut R, normal: Vec3) -> Vec3 {
-    let [x, y, z]: [f64; 3] = UnitSphere.sample(rng);
-    let v = Vec3::new(x as _, y.abs() as _, z as _).to_unit();
-
-    let t = if normal.x.abs() > normal.y.abs() {
-        Vec3::new(normal.z, 0.0, -normal.x).to_unit()
+    let v: [FloatTy; 3] = UnitSphere.sample(rng);
+    let v: Vec3 = v.into();
+    if Vec3::dot(v, normal) > 0.0 {
+        v
     } else {
-        Vec3::new(0.0, -normal.z, normal.y).to_unit()
-    };
-    let s = Vec3::cross(normal, t);
-
-    Vec3::new(
-        v.x * s.x + v.y * normal.x + v.z * t.x,
-        v.x * s.y + v.y * normal.y + v.z * t.y,
-        v.x * s.z + v.y * normal.z + v.z * t.z,
-    )
-    .to_unit()
+        v
+    }
 }

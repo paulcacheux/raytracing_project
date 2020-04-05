@@ -1,6 +1,7 @@
 use std::sync::Arc;
 
 use super::{HitRecord, Hittable, AABB};
+use crate::fconsts;
 use crate::material::Material;
 use crate::utils;
 use crate::{FloatTy, Ray, Vec3};
@@ -24,8 +25,8 @@ impl Sphere {
     fn compute_uv(p: Vec3) -> (FloatTy, FloatTy) {
         let phi = p.z.atan2(p.x);
         let theta = p.y.asin();
-        let u = 1.0 - (phi + std::f32::consts::PI) / (2.0 * std::f32::consts::PI);
-        let v = (theta + std::f32::consts::FRAC_PI_2) / std::f32::consts::PI;
+        let u = 1.0 - (phi + fconsts::PI) / (2.0 * fconsts::PI);
+        let v = (theta + fconsts::FRAC_PI_2) / fconsts::PI;
         (u, v)
     }
 }

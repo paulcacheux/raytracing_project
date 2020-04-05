@@ -3,7 +3,7 @@ use std::str::FromStr;
 
 use crate::scene_description::builder::SceneDescriptionBuilder;
 use crate::scene_description::{SceneObjectOrIdentifier, SceneObject};
-use raytracer::{Vec3};
+use raytracer::{Vec3, FloatTy};
 
 grammar(builder: &mut SceneDescriptionBuilder);
 
@@ -48,7 +48,7 @@ pub Vec3: Vec3 = {
 };
 
 Identifier: String = <s:ID> => s.to_owned();
-Float: f32 = <s:FLOAT> => f32::from_str(s).unwrap();
+Float: FloatTy = <s:FLOAT> => FloatTy::from_str(s).unwrap();
 
 Params: HashMap<String, SceneObjectOrIdentifier> = {
     <params:Comma<Param>> => {

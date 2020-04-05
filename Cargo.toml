@@ -4,8 +4,3 @@ members = [
     "raytracer",
     "raytracer_cli"
 ]
-
-
-[profile.release]
-lto = true
-codegen-units = 1

@@ -4,7 +4,7 @@ use std::sync::mpsc;
 use std::sync::Arc;
 
 use clap::{App, Arg};
-use indicatif::ProgressBar;
+use indicatif::{ProgressBar, ProgressStyle};
 use lalrpop_util::lalrpop_mod;
 use maplit::hashmap;
 use rand;
@@ -107,13 +107,13 @@ fn default_scene_builder() -> SceneDescription {
     for a in -11..11 {
         for b in -11..11 {
             let center = Vec3::new(
-                a as f32 + 0.9 * rng.gen::<f32>(),
+                a as FloatTy + 0.9 * rng.gen::<FloatTy>(),
                 0.2,
-                b as f32 + 0.9 * rng.gen::<f32>(),
+                b as FloatTy + 0.9 * rng.gen::<FloatTy>(),
             );
 
             if (center - Vec3::new(4.0, 0.2, 0.0)).length() > 0.9 {
-                let mat: f32 = rng.gen();
+                let mat: FloatTy = rng.gen();
 
                 if mat < 0.8 {
                     let albedo = Vec3::memberwise_product(rng.gen(), rng.gen());
@@ -163,7 +163,8 @@ fn default_scene_builder() -> SceneDescription {
         Arc::new(Metal::new(Vec3::new(0.7, 0.6, 0.5), None)),
     )));
 
-    let declarations = hittable::build_bvh(objects);
+    // let declarations = hittable::build_bvh(objects);
+    let declarations = objects;
 
     SceneDescription {
         presets: hashmap! {
@@ -253,6 +254,12 @@ fn main() {
     drop(send);
 
     let progress_bar = ProgressBar::new((ny * nx) as _);
+    progress_bar.set_style(
+        ProgressStyle::default_bar()
+            .template("{spinner:.green} [{elapsed_precise}] [{bar:40.cyan/blue}] ({eta})")
+            .progress_chars("#>-"),
+    );
+
     for (i, j, color) in recv.into_iter() {
         image.set_pixel(i, j, color);
         progress_bar.inc(1);

@@ -3,7 +3,7 @@ use std::sync::Arc;
 
 use crate::PresetConfig;
 use raytracer::material::Material;
-use raytracer::{Hittable, Vec3};
+use raytracer::{FloatTy, Hittable, Vec3};
 
 pub mod builder;
 mod creators;
@@ -18,7 +18,7 @@ pub enum SceneObjectKind {
 
 #[derive(Clone)]
 pub enum SceneObject {
-    Float(f32),
+    Float(FloatTy),
     Vec3(Vec3),
     Material(Arc<dyn Material>),
 }
