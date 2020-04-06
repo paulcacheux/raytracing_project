@@ -3,7 +3,6 @@ use rand::{
     Rng,
 };
 
-use crate::utils::clamp;
 use crate::FloatTy;
 
 #[derive(Debug, Clone, Copy, PartialEq)]

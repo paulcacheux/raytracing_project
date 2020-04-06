@@ -8,7 +8,7 @@ use rand::prelude::*;
 
 use raytracer::hittable::{self, Plane, Sphere, XYRect, XZRect, YZRect};
 use raytracer::material::{Dielectric, Lambertian, Light, Metal};
-use raytracer::texture::{CheckerTexture, ImageTexture, PerlinTexture, SolidTexture};
+use raytracer::texture::{CheckerTexture, ImageTexture, SolidTexture};
 use raytracer::{self, FloatTy, Hittable, HittableExt, Vec3};
 
 use crate::scene_description::SceneDescription;
