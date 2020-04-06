@@ -80,7 +80,7 @@ fn main() {
     let scene = if let Some(input_path) = matches.value_of("INPUT") {
         parse_input_file(&input_path).unwrap()
     } else {
-        default_scene::two_spheres()
+        default_scene::default_scene_builder()
     };
 
     let objects = Arc::new(scene.declarations);

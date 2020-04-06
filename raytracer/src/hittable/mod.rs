@@ -8,10 +8,12 @@ use crate::FloatTy;
 mod aabb;
 mod bhv;
 mod plane;
+mod rect;
 mod sphere;
 pub use aabb::*;
 pub use bhv::*;
 pub use plane::*;
+pub use rect::*;
 pub use sphere::*;
 
 #[derive(Debug, Clone)]
@@ -110,3 +112,30 @@ impl<T: Hittable> HitCheckable for T {
         self.is_hit_by(ray, tmin, tmax).is_some()
     }
 }
+
+pub struct FlipFaceHittable<T: Hittable> {
+    inner: T,
+}
+
+impl<T: Hittable> Hittable for FlipFaceHittable<T> {
+    fn bounding_box(&self) -> Option<AABB> {
+        self.inner.bounding_box()
+    }
+
+    fn is_hit_by(&self, ray: &Ray, tmin: FloatTy, tmax: Option<FloatTy>) -> Option<HitRecord> {
+        if let Some(mut record) = self.inner.is_hit_by(ray, tmin, tmax) {
+            record.front_face = !record.front_face;
+            Some(record)
+        } else {
+            None
+        }
+    }
+}
+
+pub trait HittableExt: Hittable + Sized {
+    fn flip_face(self) -> FlipFaceHittable<Self> {
+        FlipFaceHittable { inner: self }
+    }
+}
+
+impl<T: Sized + Hittable> HittableExt for T {}

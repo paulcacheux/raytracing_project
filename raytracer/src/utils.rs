@@ -30,3 +30,14 @@ pub(crate) fn fmax(a: FloatTy, b: FloatTy) -> FloatTy {
         b
     }
 }
+
+#[inline]
+pub fn clamp(v: FloatTy, min: FloatTy, max: FloatTy) -> FloatTy {
+    if v < min {
+        min
+    } else if v > max {
+        max
+    } else {
+        v
+    }
+}

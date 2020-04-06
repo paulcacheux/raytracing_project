@@ -21,10 +21,7 @@ impl Light {
 
 impl Material for Light {
     fn scatter(&self, _: &Ray, _: &HitRecord) -> Option<MaterialScatter> {
-        Some(MaterialScatter {
-            attenuation: Vec3::all(0.0),
-            scattered: None,
-        })
+        None
     }
 
     fn emit(&self, _u: FloatTy, _v: FloatTy, _point: Vec3) -> Vec3 {

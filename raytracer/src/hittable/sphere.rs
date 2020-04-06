@@ -23,7 +23,7 @@ impl Sphere {
     }
 
     fn compute_uv(&self, p: Vec3) -> (FloatTy, FloatTy) {
-        let d = p - self.center;
+        let d = (p - self.center).to_unit();
         let phi = d.z.atan2(d.x);
         let theta = d.y.asin();
         let u = 1.0 - (phi + fconsts::PI) / (2.0 * fconsts::PI);

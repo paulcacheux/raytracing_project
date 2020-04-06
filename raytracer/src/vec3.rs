@@ -3,6 +3,7 @@ use rand::{
     Rng,
 };
 
+use crate::utils::clamp;
 use crate::FloatTy;
 
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -57,6 +58,14 @@ impl Vec3 {
     #[inline]
     pub fn to_unit(self) -> Self {
         self / self.length()
+    }
+
+    pub fn clamp(self) -> Self {
+        Vec3::new(
+            clamp(self.x, 0.0, 1.0),
+            clamp(self.y, 0.0, 1.0),
+            clamp(self.z, 0.0, 1.0),
+        )
     }
 }
 

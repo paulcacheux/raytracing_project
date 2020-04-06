@@ -11,7 +11,7 @@ pub type FloatTy = f64;
 
 pub use crate::camera::*;
 pub use crate::color::*;
-pub use crate::hittable::Hittable;
+pub use crate::hittable::{Hittable, HittableExt};
 pub use crate::ray::*;
 pub use crate::texture::Texture;
 pub use crate::vec3::*;
@@ -23,28 +23,31 @@ pub fn compute_color(
     max_depth: usize,
     background: Vec3,
 ) -> Vec3 {
+    if depth >= max_depth {
+        return Vec3::all(0.0);
+    }
+
     if let Some(record) = objects.is_hit_by(&ray, 0.01, None) {
         let emitted = record.material.emit(record.u, record.v, record.p);
 
-        if depth < max_depth {
-            if let Some(material_scatter) = record.material.scatter(&ray, &record) {
-                return if let Some(scattered) = material_scatter.scattered {
-                    let cos_theta = Vec3::dot(scattered.direction, record.normal);
-                    let brdf = material_scatter.attenuation / (std::f64::consts::PI as FloatTy);
-                    let p = 1.0 / (2.0 * std::f64::consts::PI as FloatTy);
-                    let scattered_color =
-                        compute_color(objects, scattered, depth + 1, max_depth, background);
-                    emitted + Vec3::memberwise_product(scattered_color, brdf) * cos_theta / p
-                } else {
-                    emitted
-                };
-            }
-            let x = 1.0f32;
-            let y = 2.0f32;
+        if let Some(material_scatter) = record.material.scatter(&ray, &record) {
+            if let Some(scattered) = material_scatter.scattered {
+                /*let cos_theta = Vec3::dot(scattered.direction, record.normal);
+                let brdf = material_scatter.attenuation / fconsts::PI;
+                let p = 1.0 / (2.0 * fconsts::PI);
+                let scattered_color =
+                    compute_color(objects, scattered, depth + 1, max_depth, background);
+                emitted + Vec3::memberwise_product(scattered_color, brdf) * cos_theta / p*/
 
-            assert_eq!(x.max(y), y);
+                let scattered_color =
+                    compute_color(objects, scattered, depth + 1, max_depth, background);
+                emitted + Vec3::memberwise_product(material_scatter.attenuation, scattered_color)
+            } else {
+                emitted
+            }
+        } else {
+            emitted
         }
-        emitted
     } else {
         background
     }

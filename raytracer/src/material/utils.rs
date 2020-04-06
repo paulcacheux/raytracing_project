@@ -1,4 +1,4 @@
-use crate::{FloatTy, Vec3};
+use crate::{fconsts, FloatTy, Vec3};
 use rand;
 use rand::prelude::*;
 use rand_distr::{Distribution, UnitSphere};
@@ -23,6 +23,7 @@ pub fn schlick(cos: FloatTy, reflective_index: FloatTy) -> FloatTy {
     r0 + (1.0 - r0) * (1.0 - cos).powi(5)
 }
 
+/*
 #[inline]
 pub fn random_unit_hemisphere<R: Rng>(rng: &mut R, normal: Vec3) -> Vec3 {
     let v: [FloatTy; 3] = UnitSphere.sample(rng);
@@ -32,4 +33,11 @@ pub fn random_unit_hemisphere<R: Rng>(rng: &mut R, normal: Vec3) -> Vec3 {
     } else {
         v
     }
+}
+*/
+
+pub fn random_unit_vector<R: Rng>(rng: &mut R, normal: Vec3) -> Vec3 {
+    let v: [FloatTy; 3] = UnitSphere.sample(rng);
+    let v: Vec3 = v.into();
+    v + normal
 }

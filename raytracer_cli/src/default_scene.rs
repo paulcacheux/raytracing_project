@@ -1,13 +1,15 @@
+#![allow(dead_code)]
+
 use std::sync::Arc;
 
 use maplit::hashmap;
 use rand;
 use rand::prelude::*;
 
-use raytracer::hittable::{self, Plane, Sphere};
-use raytracer::material::{Dielectric, Lambertian, Metal};
+use raytracer::hittable::{self, Plane, Sphere, XYRect, XZRect, YZRect};
+use raytracer::material::{Dielectric, Lambertian, Light, Metal};
 use raytracer::texture::{CheckerTexture, ImageTexture, PerlinTexture, SolidTexture};
-use raytracer::{self, FloatTy, Hittable, Vec3};
+use raytracer::{self, FloatTy, Hittable, HittableExt, Vec3};
 
 use crate::scene_description::SceneDescription;
 use crate::PresetConfig;
@@ -33,7 +35,7 @@ pub fn default_scene_builder() -> SceneDescription {
         up: Vec3::new(0.0, 1.0, 0.0),
         vfov: 20.0,
         sample_count: 12,
-        max_depth: 3,
+        max_depth: 5,
         background: Some(Vec3::all(0.1)),
     };
 
@@ -141,36 +143,28 @@ pub fn two_spheres() -> SceneDescription {
         width: 600,
         height: 400,
         look_from: Vec3::new(13.0, 2.0, 3.0),
-        look_at: Vec3::new(0.0, 0.0, 0.0),
+        look_at: Vec3::new(0.0, 2.0, 0.0),
         up: Vec3::new(0.0, 1.0, 0.0),
-        vfov: 20.0,
+        vfov: 60.0,
         sample_count: 1,
         max_depth: 3,
-        background: Some(Vec3::all(0.5)),
+        background: None,
     };
 
     let test_preset = PresetConfig {
         width: 900,
         height: 600,
-        look_from: Vec3::new(13.0, 2.0, 3.0),
-        look_at: Vec3::new(0.0, 0.0, 0.0),
-        up: Vec3::new(0.0, 1.0, 0.0),
-        vfov: 20.0,
         sample_count: 12,
         max_depth: 3,
-        background: Some(Vec3::all(0.5)),
+        ..default_preset
     };
 
     let complete_preset = PresetConfig {
         width: 1200,
         height: 800,
-        look_from: Vec3::new(13.0, 2.0, 3.0),
-        look_at: Vec3::new(0.0, 0.0, 0.0),
-        up: Vec3::new(0.0, 1.0, 0.0),
-        vfov: 20.0,
         sample_count: 128,
         max_depth: 10,
-        background: Some(Vec3::all(0.5)),
+        ..default_preset
     };
 
     /*let ball_texture = Arc::new(CheckerTexture::new(
@@ -196,9 +190,18 @@ pub fn two_spheres() -> SceneDescription {
     ))];
 
     objects.push(Box::new(Sphere::new(
-        Vec3::new(0.0, 1.0, 0.0),
-        1.0,
+        Vec3::new(0.0, 2.0, 0.0),
+        2.0,
         Arc::new(Lambertian::new(earth_texture)),
+    )));
+
+    objects.push(Box::new(XYRect::new(
+        3.0,
+        5.0,
+        1.0,
+        3.0,
+        -1.5,
+        Arc::new(Light::white()),
     )));
 
     let declarations = objects;
@@ -210,5 +213,70 @@ pub fn two_spheres() -> SceneDescription {
             "test".into() => test_preset
         },
         declarations,
+    }
+}
+
+pub fn cornell_box() -> SceneDescription {
+    let default_preset = PresetConfig {
+        width: 400,
+        height: 400,
+        look_from: Vec3::new(278.0, 278.0, -800.0),
+        look_at: Vec3::new(278.0, 278.0, 0.0),
+        up: Vec3::new(0.0, 1.0, 0.0),
+        vfov: 40.0,
+        sample_count: 1,
+        max_depth: 3,
+        background: None,
+    };
+
+    let test_preset = PresetConfig {
+        width: 600,
+        height: 600,
+        sample_count: 128,
+        max_depth: 40,
+        ..default_preset
+    };
+
+    let red = Arc::new(Lambertian::from_solid_color(Vec3::new(0.65, 0.05, 0.05)));
+    let white = Arc::new(Lambertian::from_solid_color(Vec3::new(0.73, 0.73, 0.73)));
+    let green = Arc::new(Lambertian::from_solid_color(Vec3::new(0.12, 0.45, 0.15)));
+    let light = Arc::new(Light::new(Vec3::all(15.0)));
+
+    let mut objects: Vec<Box<dyn Hittable>> = Vec::new();
+    objects.push(Box::new(
+        YZRect::new(0.0, 555.0, 0.0, 555.0, 555.0, green.clone()).flip_face(),
+    ));
+    objects.push(Box::new(YZRect::new(
+        0.0,
+        555.0,
+        0.0,
+        555.0,
+        0.0,
+        red.clone(),
+    )));
+    objects.push(Box::new(XZRect::new(
+        0.0,
+        555.0,
+        0.0,
+        555.0,
+        0.0,
+        white.clone(),
+    )));
+    objects.push(Box::new(
+        XYRect::new(0.0, 555.0, 0.0, 555.0, 555.0, white.clone()).flip_face(),
+    ));
+    objects.push(Box::new(
+        XZRect::new(0.0, 555.0, 0.0, 555.0, 555.0, white.clone()).flip_face(),
+    ));
+    objects.push(Box::new(XZRect::new(
+        213.0, 343.0, 227.0, 332.0, 554.0, light,
+    )));
+
+    SceneDescription {
+        presets: hashmap! {
+            "default".into() => default_preset,
+            "test".into() => test_preset,
+        },
+        declarations: objects,
     }
 }
