@@ -16,7 +16,7 @@ pub use metal::*;
 #[derive(Debug, Clone)]
 pub struct MaterialScatter {
     pub attenuation: Vec3,
-    pub scattered: Option<Ray>,
+    pub scattered: Ray,
 }
 
 pub trait Material: Send + Sync + std::fmt::Debug {

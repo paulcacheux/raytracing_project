@@ -31,20 +31,19 @@ pub fn compute_color(
         let emitted = record.material.emit(record.u, record.v, record.p);
 
         if let Some(material_scatter) = record.material.scatter(&ray, &record) {
-            if let Some(scattered) = material_scatter.scattered {
-                /*let cos_theta = Vec3::dot(scattered.direction, record.normal);
-                let brdf = material_scatter.attenuation / fconsts::PI;
-                let p = 1.0 / (2.0 * fconsts::PI);
-                let scattered_color =
-                    compute_color(objects, scattered, depth + 1, max_depth, background);
-                emitted + Vec3::memberwise_product(scattered_color, brdf) * cos_theta / p*/
+            let scattered = material_scatter.scattered;
+            let brdf = material_scatter.attenuation;
 
-                let scattered_color =
-                    compute_color(objects, scattered, depth + 1, max_depth, background);
-                emitted + Vec3::memberwise_product(material_scatter.attenuation, scattered_color)
-            } else {
-                emitted
-            }
+            /*
+            let cos_theta = Vec3::dot(scattered.direction, record.normal);
+            let scattered_color =
+                compute_color(objects, scattered, depth + 1, max_depth, background);
+            emitted + Vec3::memberwise_product(scattered_color, brdf) * cos_theta * 2.0
+            */
+
+            let scattered_color =
+                compute_color(objects, scattered, depth + 1, max_depth, background);
+            emitted + Vec3::memberwise_product(scattered_color, brdf)
         } else {
             emitted
         }

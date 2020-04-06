@@ -29,7 +29,7 @@ impl Material for Metal {
             let scattered = Ray::new(record.p, reflected.to_unit() + sample_sphere * self.fuzz);
             Some(MaterialScatter {
                 attenuation: self.albedo,
-                scattered: Some(scattered),
+                scattered,
             })
         } else {
             None

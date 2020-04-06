@@ -1,26 +1,28 @@
-use std::sync::Arc;
-
 use super::{utils, Material, MaterialScatter};
 use crate::hittable::HitRecord;
 use crate::texture::SolidTexture;
 use crate::{Ray, Texture, Vec3};
 
 #[derive(Debug)]
-pub struct Lambertian {
-    texture: Arc<dyn Texture>,
+pub struct Lambertian<T: Texture> {
+    texture: T,
 }
 
-impl Lambertian {
-    pub fn new(texture: Arc<dyn Texture>) -> Self {
+impl<T: Texture> Lambertian<T> {
+    pub fn new(texture: T) -> Self {
         Lambertian { texture }
     }
+}
 
+impl Lambertian<SolidTexture> {
     pub fn from_solid_color(color: Vec3) -> Self {
-        Lambertian::new(Arc::new(SolidTexture::new(color)))
+        Lambertian {
+            texture: SolidTexture::new(color),
+        }
     }
 }
 
-impl Material for Lambertian {
+impl<T: Texture> Material for Lambertian<T> {
     fn scatter(&self, _: &Ray, record: &HitRecord) -> Option<MaterialScatter> {
         let mut rng = rand::thread_rng();
         // let new_direction = utils::random_unit_hemisphere(&mut rng, record.normal);
@@ -30,7 +32,7 @@ impl Material for Lambertian {
         let attenuation = self.texture.value(record.u, record.v);
         Some(MaterialScatter {
             attenuation,
-            scattered: Some(scattered),
+            scattered,
         })
     }
 }

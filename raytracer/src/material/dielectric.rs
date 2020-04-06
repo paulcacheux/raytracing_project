@@ -39,14 +39,14 @@ impl Material for Dielectric {
             let scattered = Ray::new(record.p, reflected);
             Some(MaterialScatter {
                 attenuation,
-                scattered: Some(scattered),
+                scattered,
             })
         } else {
             let refracted = utils::refract(uv, record.normal, n1_over_n2);
             let scattered = Ray::new(record.p, refracted);
             Some(MaterialScatter {
                 attenuation,
-                scattered: Some(scattered),
+                scattered,
             })
         }
     }

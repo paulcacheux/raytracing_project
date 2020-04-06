@@ -51,11 +51,11 @@ pub fn default_scene_builder() -> SceneDescription {
         background: Some(Vec3::all(0.1)),
     };
 
-    let checker_texture = Arc::new(CheckerTexture::new(
+    let checker_texture = CheckerTexture::new(
         Arc::new(SolidTexture::new(Vec3::new(0.2, 0.3, 0.1))),
         Arc::new(SolidTexture::new(Vec3::all(0.9))),
         10.0,
-    ));
+    );
 
     let mut objects: Vec<Box<dyn Hittable>> = vec![Box::new(Plane::with_uv(
         Vec3::all(0.0),
@@ -176,11 +176,11 @@ pub fn two_spheres() -> SceneDescription {
 
     let earth_texture = Arc::new(ImageTexture::open("./textures/earthmap.jpg").unwrap());
 
-    let ground_texture = Arc::new(CheckerTexture::new(
+    let ground_texture = CheckerTexture::new(
         Arc::new(SolidTexture::new(Vec3::new(0.2, 0.3, 0.1))),
         Arc::new(SolidTexture::new(Vec3::all(0.9))),
         10.0,
-    ));
+    );
 
     let mut objects: Vec<Box<dyn Hittable>> = vec![Box::new(Plane::with_uv(
         Vec3::all(0.0),
@@ -237,6 +237,14 @@ pub fn cornell_box() -> SceneDescription {
         ..default_preset
     };
 
+    let complete_preset = PresetConfig {
+        width: 600,
+        height: 600,
+        sample_count: 300,
+        max_depth: 10,
+        ..default_preset
+    };
+
     let red = Arc::new(Lambertian::from_solid_color(Vec3::new(0.65, 0.05, 0.05)));
     let white = Arc::new(Lambertian::from_solid_color(Vec3::new(0.73, 0.73, 0.73)));
     let green = Arc::new(Lambertian::from_solid_color(Vec3::new(0.12, 0.45, 0.15)));
@@ -246,6 +254,7 @@ pub fn cornell_box() -> SceneDescription {
     objects.push(Box::new(
         YZRect::new(0.0, 555.0, 0.0, 555.0, 555.0, green.clone()).flip_face(),
     ));
+
     objects.push(Box::new(YZRect::new(
         0.0,
         555.0,
@@ -268,14 +277,15 @@ pub fn cornell_box() -> SceneDescription {
     objects.push(Box::new(
         XZRect::new(0.0, 555.0, 0.0, 555.0, 555.0, white.clone()).flip_face(),
     ));
-    objects.push(Box::new(XZRect::new(
-        213.0, 343.0, 227.0, 332.0, 554.0, light,
-    )));
+    objects.push(Box::new(
+        XZRect::new(213.0, 343.0, 227.0, 332.0, 554.0, light).flip_face(),
+    ));
 
     SceneDescription {
         presets: hashmap! {
             "default".into() => default_preset,
             "test".into() => test_preset,
+            "complete".into() => complete_preset,
         },
         declarations: objects,
     }
