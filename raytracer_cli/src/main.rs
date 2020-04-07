@@ -57,6 +57,15 @@ fn parse_input_file(path: &str) -> io::Result<SceneDescription> {
     Ok(scene)
 }
 
+fn search_scene(name: &str) -> SceneDescription {
+    match name {
+        "random_balls" => default_scene::default_scene_builder(),
+        "two_spheres" => default_scene::two_spheres(),
+        "cornell" => default_scene::cornell_box(),
+        other => parse_input_file(other).unwrap(),
+    }
+}
+
 fn main() {
     let matches = App::new("Raytracing CLI")
         .version("0.1")
@@ -65,7 +74,8 @@ fn main() {
         .arg(
             Arg::with_name("INPUT")
                 .help("Sets the input description file.")
-                .index(1),
+                .index(1)
+                .required(true),
         )
         .arg(
             Arg::with_name("preset")
@@ -77,11 +87,7 @@ fn main() {
         )
         .get_matches();
 
-    let scene = if let Some(input_path) = matches.value_of("INPUT") {
-        parse_input_file(&input_path).unwrap()
-    } else {
-        default_scene::default_scene_builder()
-    };
+    let scene = search_scene(matches.value_of("INPUT").unwrap());
 
     let objects = Arc::new(scene.declarations);
     let preset_name = matches.value_of("preset").unwrap_or("default");
