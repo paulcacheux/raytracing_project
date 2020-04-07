@@ -6,7 +6,7 @@ use maplit::hashmap;
 use rand;
 use rand::prelude::*;
 
-use raytracer::hittable::{self, Plane, Sphere, XYRect, XZRect, YZRect};
+use raytracer::hittable::{self, make_box, Plane, Sphere, XYRect, XZRect, YZRect};
 use raytracer::material::{Dielectric, Lambertian, Light, Metal};
 use raytracer::texture::{CheckerTexture, ImageTexture, SolidTexture};
 use raytracer::{self, FloatTy, Hittable, HittableExt, Vec3};
@@ -241,7 +241,7 @@ pub fn cornell_box() -> SceneDescription {
         width: 600,
         height: 600,
         sample_count: 300,
-        max_depth: 10,
+        max_depth: 40,
         ..default_preset
     };
 
@@ -279,6 +279,18 @@ pub fn cornell_box() -> SceneDescription {
     ));
     objects.push(Box::new(
         XZRect::new(213.0, 343.0, 227.0, 332.0, 554.0, light).flip_face(),
+    ));
+
+    objects.extend(make_box(
+        Vec3::new(130.0, 0.0, 65.0),
+        Vec3::new(295.0, 165.0, 230.0),
+        white.clone(),
+    ));
+
+    objects.extend(make_box(
+        Vec3::new(265.0, 0.0, 295.0),
+        Vec3::new(430.0, 330.0, 460.0),
+        white.clone(),
     ));
 
     SceneDescription {

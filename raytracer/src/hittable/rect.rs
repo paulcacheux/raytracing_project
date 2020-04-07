@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use crate::hittable::{HitRecord, Hittable, AABB};
+use crate::hittable::{HitRecord, Hittable, HittableExt, AABB};
 use crate::material::Material;
 use crate::ray::Ray;
 use crate::utils;
@@ -214,4 +214,49 @@ impl Hittable for XZRect {
             Vec3::new(self.x1, self.y + DELTA, self.z1),
         ))
     }
+}
+
+pub fn make_box(min: Vec3, max: Vec3, material: Arc<dyn Material>) -> Vec<Box<dyn Hittable>> {
+    let mut res: Vec<Box<dyn Hittable>> = Vec::with_capacity(6);
+
+    res.push(Box::new(XYRect::new(
+        min.x,
+        max.x,
+        min.y,
+        max.y,
+        max.z,
+        material.clone(),
+    )));
+
+    res.push(Box::new(
+        XYRect::new(min.x, max.x, min.y, max.y, min.z, material.clone()).flip_face(),
+    ));
+
+    res.push(Box::new(XZRect::new(
+        min.x,
+        max.x,
+        min.z,
+        max.z,
+        max.y,
+        material.clone(),
+    )));
+
+    res.push(Box::new(
+        XZRect::new(min.x, max.x, min.z, max.z, min.y, material.clone()).flip_face(),
+    ));
+
+    res.push(Box::new(YZRect::new(
+        min.y,
+        max.y,
+        min.z,
+        max.z,
+        max.x,
+        material.clone(),
+    )));
+
+    res.push(Box::new(
+        YZRect::new(min.y, max.y, min.z, max.z, min.x, material.clone()).flip_face(),
+    ));
+
+    res
 }
