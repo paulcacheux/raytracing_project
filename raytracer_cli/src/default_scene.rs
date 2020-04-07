@@ -293,12 +293,14 @@ pub fn cornell_box() -> SceneDescription {
         white.clone(),
     ));
 
+    let declarations = hittable::build_bvh(objects);
+
     SceneDescription {
         presets: hashmap! {
             "default".into() => default_preset,
             "test".into() => test_preset,
             "complete".into() => complete_preset,
         },
-        declarations: objects,
+        declarations,
     }
 }
