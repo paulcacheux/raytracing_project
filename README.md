@@ -1,5 +1,5 @@
 # RayTracing Project
 
-Last result image:
+Cornell Box image:
 
-![Last result image](./last_result.png?raw=true "Last result image")
+![Last result image](./saves/save7_perfect.png?raw=true "Cornell Box image")

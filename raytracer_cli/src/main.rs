@@ -33,16 +33,16 @@ pub struct PresetConfig {
     background: Option<Vec3>,
 }
 
-fn compute_pixel(
+fn compute_pixel<R: Rng>(
     camera: &Camera,
     objects: &[Box<dyn Hittable>],
     u: FloatTy,
     v: FloatTy,
-    max_depth: usize,
     background: Vec3,
+    rng: &mut R,
 ) -> Color {
     let ray = camera.get_ray(u, v);
-    let color_vec = raytracer::compute_color(&objects, ray, 0, max_depth, background);
+    let color_vec = raytracer::compute_color(&objects, ray, background, rng);
     Color::from_vec3(color_vec)
 }
 
@@ -131,7 +131,7 @@ fn main() {
 
                     let u = (i as FloatTy + di) / nx as FloatTy;
                     let v = ((ny - j - 1) as FloatTy + dj) / ny as FloatTy;
-                    let color = compute_pixel(&camera, &objects, u, v, max_depth, background_color);
+                    let color = compute_pixel(&camera, &objects, u, v, background_color, &mut rng);
                     colors.push(color);
                 }
                 local_send.send((i, j, Color::average(&colors))).unwrap();

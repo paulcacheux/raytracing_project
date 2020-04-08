@@ -1,3 +1,6 @@
+use rand;
+use rand::prelude::*;
+
 mod camera;
 mod color;
 pub mod hittable;
@@ -18,34 +21,34 @@ pub use crate::ray::*;
 pub use crate::texture::Texture;
 pub use crate::vec3::*;
 
-pub fn compute_color(
+const Q: FloatTy = 0.7;
+
+pub fn compute_color<R: Rng>(
     objects: &[Box<dyn Hittable>],
     ray: Ray,
-    depth: usize,
-    max_depth: usize,
     background: Vec3,
+    rng: &mut R,
 ) -> Vec3 {
-    if depth >= max_depth {
-        return Vec3::all(0.0);
-    }
-
     if let Some(record) = objects.is_hit_by(ray, 0.01, None) {
         let emitted = record.material.emit(record.u, record.v, record.p);
 
         if let Some(material_scatter) = record.material.scatter(&record.ray, &record) {
-            let scat_value = if let Some(scattered) = material_scatter.scattered {
-                let brdf = material_scatter.attenuation;
+            let scat_value = if rng.gen::<FloatTy>() < Q {
+                if let Some(scattered) = material_scatter.scattered {
+                    let brdf = material_scatter.attenuation;
 
-                /*
-                let cos_theta = Vec3::dot(scattered.direction, record.normal);
-                let scattered_color =
-                    compute_color(objects, scattered, depth + 1, max_depth, background);
-                emitted + Vec3::memberwise_product(scattered_color, brdf) * cos_theta * 2.0
-                */
+                    /*
+                    let cos_theta = Vec3::dot(scattered.direction, record.normal);
+                    let scattered_color =
+                        compute_color(objects, scattered, depth + 1, max_depth, background);
+                    emitted + Vec3::memberwise_product(scattered_color, brdf) * cos_theta * 2.0
+                    */
 
-                let scattered_color =
-                    compute_color(objects, scattered, depth + 1, max_depth, background);
-                Vec3::memberwise_product(scattered_color, brdf)
+                    let scattered_color = compute_color(objects, scattered, background, rng);
+                    Vec3::memberwise_product(scattered_color, brdf) / Q
+                } else {
+                    Vec3::zero()
+                }
             } else {
                 Vec3::zero()
             };
