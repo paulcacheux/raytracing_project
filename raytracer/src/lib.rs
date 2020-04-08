@@ -1,6 +1,7 @@
 mod camera;
 mod color;
 pub mod hittable;
+mod mat44;
 pub mod material;
 mod ray;
 pub mod texture;
@@ -12,6 +13,7 @@ pub type FloatTy = f64;
 pub use crate::camera::*;
 pub use crate::color::*;
 pub use crate::hittable::{Hittable, HittableExt};
+pub use crate::mat44::*;
 pub use crate::ray::*;
 pub use crate::texture::Texture;
 pub use crate::vec3::*;
@@ -31,19 +33,24 @@ pub fn compute_color(
         let emitted = record.material.emit(record.u, record.v, record.p);
 
         if let Some(material_scatter) = record.material.scatter(&ray, &record) {
-            let scattered = material_scatter.scattered;
-            let brdf = material_scatter.attenuation;
+            let scat_value = if let Some(scattered) = material_scatter.scattered {
+                let brdf = material_scatter.attenuation;
 
-            /*
-            let cos_theta = Vec3::dot(scattered.direction, record.normal);
-            let scattered_color =
-                compute_color(objects, scattered, depth + 1, max_depth, background);
-            emitted + Vec3::memberwise_product(scattered_color, brdf) * cos_theta * 2.0
-            */
+                /*
+                let cos_theta = Vec3::dot(scattered.direction, record.normal);
+                let scattered_color =
+                    compute_color(objects, scattered, depth + 1, max_depth, background);
+                emitted + Vec3::memberwise_product(scattered_color, brdf) * cos_theta * 2.0
+                */
 
-            let scattered_color =
-                compute_color(objects, scattered, depth + 1, max_depth, background);
-            emitted + Vec3::memberwise_product(scattered_color, brdf)
+                let scattered_color =
+                    compute_color(objects, scattered, depth + 1, max_depth, background);
+                Vec3::memberwise_product(scattered_color, brdf)
+            } else {
+                Vec3::zero()
+            };
+
+            emitted + scat_value
         } else {
             emitted
         }

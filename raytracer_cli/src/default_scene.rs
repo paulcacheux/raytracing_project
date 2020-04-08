@@ -9,7 +9,7 @@ use rand::prelude::*;
 use raytracer::hittable::{self, make_box, Plane, Sphere, XYRect, XZRect, YZRect};
 use raytracer::material::{Dielectric, Lambertian, Light, Metal};
 use raytracer::texture::{CheckerTexture, ImageTexture, SolidTexture};
-use raytracer::{self, FloatTy, Hittable, HittableExt, Vec3};
+use raytracer::{self, FloatTy, Hittable, HittableExt, Mat44, Vec3};
 
 use crate::scene_description::SceneDescription;
 use crate::PresetConfig;
@@ -245,14 +245,16 @@ pub fn cornell_box() -> SceneDescription {
         ..default_preset
     };
 
-    let red = Arc::new(Lambertian::from_solid_color(Vec3::new(0.65, 0.05, 0.05)));
-    let white = Arc::new(Lambertian::from_solid_color(Vec3::new(0.73, 0.73, 0.73)));
-    let green = Arc::new(Lambertian::from_solid_color(Vec3::new(0.12, 0.45, 0.15)));
-    let light = Arc::new(Light::new(Vec3::all(15.0)));
+    let red = Arc::new(Lambertian::from_solid_color(Vec3::new(0.7, 0.12, 0.05)));
+    let wall = Arc::new(Lambertian::from_solid_color(Vec3::all(1.0)));
+    let white = Arc::new(Lambertian::from_solid_color(Vec3::new(0.95, 0.95, 0.95)));
+    let green = Arc::new(Lambertian::from_solid_color(Vec3::new(0.2, 0.4, 0.36)));
+    let light = Arc::new(Light::new(Vec3::new(1.0, 0.7, 0.38) * 30.0));
+    let mirror = Arc::new(Metal::new(Vec3::all(1.0), None));
 
     let mut objects: Vec<Box<dyn Hittable>> = Vec::new();
     objects.push(Box::new(
-        YZRect::new(0.0, 555.0, 0.0, 555.0, 555.0, green.clone()).flip_face(),
+        YZRect::new(0.0, 555.0, 0.0, 555.0, 555.0, red.clone()).flip_face(),
     ));
 
     objects.push(Box::new(YZRect::new(
@@ -261,7 +263,7 @@ pub fn cornell_box() -> SceneDescription {
         0.0,
         555.0,
         0.0,
-        red.clone(),
+        green.clone(),
     )));
     objects.push(Box::new(XZRect::new(
         0.0,
@@ -269,29 +271,35 @@ pub fn cornell_box() -> SceneDescription {
         0.0,
         555.0,
         0.0,
-        white.clone(),
+        wall.clone(),
     )));
     objects.push(Box::new(
-        XYRect::new(0.0, 555.0, 0.0, 555.0, 555.0, white.clone()).flip_face(),
+        XYRect::new(0.0, 555.0, 0.0, 555.0, 555.0, wall.clone()).flip_face(),
     ));
     objects.push(Box::new(
-        XZRect::new(0.0, 555.0, 0.0, 555.0, 555.0, white.clone()).flip_face(),
+        XZRect::new(0.0, 555.0, 0.0, 555.0, 555.0, wall.clone()).flip_face(),
     ));
     objects.push(Box::new(
         XZRect::new(213.0, 343.0, 227.0, 332.0, 554.0, light).flip_face(),
     ));
 
-    objects.extend(make_box(
-        Vec3::new(130.0, 0.0, 65.0),
-        Vec3::new(295.0, 165.0, 230.0),
-        white.clone(),
-    ));
+    let box1 = make_box(
+        Vec3::all(0.0),
+        Vec3::new(165.0, 330.0, 165.0),
+        mirror.clone(),
+    );
+    let transform1 = Mat44::translation(Vec3::new(265.0, 0.0, 295.0))
+        * Mat44::rotation(Vec3::new(0.0, 1.0, 0.0), (15.0 as FloatTy).to_radians());
+    objects.push(Box::new(box1.transform(transform1)));
 
-    objects.extend(make_box(
-        Vec3::new(265.0, 0.0, 295.0),
-        Vec3::new(430.0, 330.0, 460.0),
+    let box2 = make_box(
+        Vec3::all(0.0),
+        Vec3::new(165.0, 165.0, 165.0),
         white.clone(),
-    ));
+    );
+    let transform2 = Mat44::translation(Vec3::new(130.0, 0.0, 65.0))
+        * Mat44::rotation(Vec3::new(0.0, 1.0, 0.0), (-18.0 as FloatTy).to_radians());
+    objects.push(Box::new(box2.transform(transform2)));
 
     let declarations = hittable::build_bvh(objects);
 

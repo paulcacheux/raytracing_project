@@ -2,16 +2,17 @@ use std::sync::Arc;
 
 use crate::material::Material;
 use crate::ray::Ray;
-use crate::vec3::Vec3;
-use crate::FloatTy;
+use crate::{FloatTy, Mat44, Vec3};
 
 mod aabb;
 mod bhv;
+mod operation;
 mod plane;
 mod rect;
 mod sphere;
 pub use aabb::*;
 pub use bhv::*;
+pub use operation::*;
 pub use plane::*;
 pub use rect::*;
 pub use sphere::*;
@@ -65,6 +66,16 @@ pub trait Hittable: Sync + Send {
 
 pub type HittableList = Vec<Box<dyn Hittable>>;
 
+impl Hittable for HittableList {
+    fn is_hit_by(&self, ray: &Ray, tmin: FloatTy, tmax: Option<FloatTy>) -> Option<HitRecord> {
+        self.as_slice().is_hit_by(ray, tmin, tmax)
+    }
+
+    fn bounding_box(&self) -> Option<AABB> {
+        self.as_slice().bounding_box()
+    }
+}
+
 impl Hittable for &[Box<dyn Hittable>] {
     fn is_hit_by(&self, ray: &Ray, tmin: FloatTy, tmax: Option<FloatTy>) -> Option<HitRecord> {
         let mut current_closest = tmax;
@@ -113,28 +124,13 @@ impl<T: Hittable> HitCheckable for T {
     }
 }
 
-pub struct FlipFaceHittable<T: Hittable> {
-    inner: T,
-}
-
-impl<T: Hittable> Hittable for FlipFaceHittable<T> {
-    fn bounding_box(&self) -> Option<AABB> {
-        self.inner.bounding_box()
-    }
-
-    fn is_hit_by(&self, ray: &Ray, tmin: FloatTy, tmax: Option<FloatTy>) -> Option<HitRecord> {
-        if let Some(mut record) = self.inner.is_hit_by(ray, tmin, tmax) {
-            record.front_face = !record.front_face;
-            Some(record)
-        } else {
-            None
-        }
-    }
-}
-
 pub trait HittableExt: Hittable + Sized {
     fn flip_face(self) -> FlipFaceHittable<Self> {
-        FlipFaceHittable { inner: self }
+        FlipFaceHittable::new(self)
+    }
+
+    fn transform(self, transform: Mat44) -> TransformHittable<Self> {
+        TransformHittable::new(self, transform)
     }
 }
 

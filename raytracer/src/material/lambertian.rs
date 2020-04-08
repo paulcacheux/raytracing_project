@@ -37,7 +37,7 @@ impl<T: Texture> Material for Lambertian<T> {
         let attenuation = self.texture.value(record.u, record.v);
         Some(MaterialScatter {
             attenuation,
-            scattered,
+            scattered: Some(scattered),
         })
     }
 }
