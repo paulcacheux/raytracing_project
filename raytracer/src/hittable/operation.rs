@@ -1,31 +1,6 @@
 use super::{HitRecord, Hittable, AABB};
 use crate::{FloatTy, Mat44, Ray, Vec3};
 
-pub struct FlipFaceHittable<H: Hittable> {
-    inner: H,
-}
-
-impl<H: Hittable> FlipFaceHittable<H> {
-    pub fn new(inner: H) -> Self {
-        FlipFaceHittable { inner }
-    }
-}
-
-impl<H: Hittable> Hittable for FlipFaceHittable<H> {
-    fn bounding_box(&self) -> Option<AABB> {
-        self.inner.bounding_box()
-    }
-
-    fn is_hit_by(&self, ray: &Ray, tmin: FloatTy, tmax: Option<FloatTy>) -> Option<HitRecord> {
-        if let Some(mut record) = self.inner.is_hit_by(ray, tmin, tmax) {
-            record.front_face = !record.front_face;
-            Some(record)
-        } else {
-            None
-        }
-    }
-}
-
 pub struct TransformHittable<H: Hittable> {
     inner: H,
     transform: Mat44,
@@ -98,18 +73,22 @@ impl<H: Hittable> Hittable for TransformHittable<H> {
         Some(AABB::new(min, max))
     }
 
-    fn is_hit_by(&self, ray: &Ray, tmin: FloatTy, tmax: Option<FloatTy>) -> Option<HitRecord> {
+    fn is_hit_by(&self, ray: Ray, tmin: FloatTy, tmax: Option<FloatTy>) -> Option<HitRecord> {
         let new_ray = Ray::new(
             self.inverse.mul_point(ray.origin),
             self.inverse.mul_direction(ray.direction),
         );
 
-        if let Some(record) = self.inner.is_hit_by(&new_ray, tmin, tmax) {
-            Some(HitRecord {
-                p: self.transform.mul_point(record.p),
-                normal: self.transform.mul_direction(record.normal),
-                ..record
-            })
+        if let Some(record) = self.inner.is_hit_by(new_ray, tmin, tmax) {
+            Some(HitRecord::new(
+                new_ray,
+                record.t,
+                self.transform.mul_point(record.p),
+                self.transform.mul_direction(record.normal),
+                record.u,
+                record.v,
+                record.material,
+            ))
         } else {
             None
         }

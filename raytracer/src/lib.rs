@@ -29,10 +29,10 @@ pub fn compute_color(
         return Vec3::all(0.0);
     }
 
-    if let Some(record) = objects.is_hit_by(&ray, 0.01, None) {
+    if let Some(record) = objects.is_hit_by(ray, 0.01, None) {
         let emitted = record.material.emit(record.u, record.v, record.p);
 
-        if let Some(material_scatter) = record.material.scatter(&ray, &record) {
+        if let Some(material_scatter) = record.material.scatter(&record.ray, &record) {
             let scat_value = if let Some(scattered) = material_scatter.scattered {
                 let brdf = material_scatter.attenuation;
 

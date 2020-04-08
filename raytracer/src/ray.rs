@@ -1,7 +1,7 @@
 use crate::vec3::Vec3;
 use crate::FloatTy;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Copy)]
 pub struct Ray {
     pub origin: Vec3,
     pub direction: Vec3,

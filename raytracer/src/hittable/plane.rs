@@ -47,7 +47,7 @@ impl Plane {
 }
 
 impl Hittable for Plane {
-    fn is_hit_by(&self, ray: &Ray, tmin: FloatTy, tmax: Option<FloatTy>) -> Option<HitRecord> {
+    fn is_hit_by(&self, ray: Ray, tmin: FloatTy, tmax: Option<FloatTy>) -> Option<HitRecord> {
         let denominator = Vec3::dot(ray.direction, self.normal);
         if denominator.abs() <= fconsts::EPSILON {
             return None;

@@ -224,8 +224,8 @@ pub fn cornell_box() -> SceneDescription {
         look_at: Vec3::new(278.0, 278.0, 0.0),
         up: Vec3::new(0.0, 1.0, 0.0),
         vfov: 40.0,
-        sample_count: 1,
-        max_depth: 3,
+        sample_count: 40,
+        max_depth: 5,
         background: None,
     };
 
@@ -240,8 +240,8 @@ pub fn cornell_box() -> SceneDescription {
     let complete_preset = PresetConfig {
         width: 600,
         height: 600,
-        sample_count: 300,
-        max_depth: 40,
+        sample_count: 1024,
+        max_depth: 10,
         ..default_preset
     };
 
@@ -250,12 +250,17 @@ pub fn cornell_box() -> SceneDescription {
     let white = Arc::new(Lambertian::from_solid_color(Vec3::new(0.95, 0.95, 0.95)));
     let green = Arc::new(Lambertian::from_solid_color(Vec3::new(0.2, 0.4, 0.36)));
     let light = Arc::new(Light::new(Vec3::new(1.0, 0.7, 0.38) * 30.0));
-    let mirror = Arc::new(Metal::new(Vec3::all(1.0), None));
+    let mirror = Arc::new(Metal::new(Vec3::all(0.9), None));
 
     let mut objects: Vec<Box<dyn Hittable>> = Vec::new();
-    objects.push(Box::new(
-        YZRect::new(0.0, 555.0, 0.0, 555.0, 555.0, red.clone()).flip_face(),
-    ));
+    objects.push(Box::new(YZRect::new(
+        0.0,
+        555.0,
+        0.0,
+        555.0,
+        555.0,
+        red.clone(),
+    )));
 
     objects.push(Box::new(YZRect::new(
         0.0,
@@ -273,30 +278,37 @@ pub fn cornell_box() -> SceneDescription {
         0.0,
         wall.clone(),
     )));
-    objects.push(Box::new(
-        XYRect::new(0.0, 555.0, 0.0, 555.0, 555.0, wall.clone()).flip_face(),
-    ));
-    objects.push(Box::new(
-        XZRect::new(0.0, 555.0, 0.0, 555.0, 555.0, wall.clone()).flip_face(),
-    ));
-    objects.push(Box::new(
-        XZRect::new(213.0, 343.0, 227.0, 332.0, 554.0, light).flip_face(),
-    ));
+    objects.push(Box::new(XYRect::new(
+        0.0,
+        555.0,
+        0.0,
+        555.0,
+        555.0,
+        wall.clone(),
+    )));
+    objects.push(Box::new(XZRect::new(
+        0.0,
+        555.0,
+        0.0,
+        555.0,
+        555.0,
+        wall.clone(),
+    )));
+    objects.push(Box::new(XZRect::new(
+        213.0, 343.0, 227.0, 332.0, 554.0, light,
+    )));
 
     let box1 = make_box(
         Vec3::all(0.0),
         Vec3::new(165.0, 330.0, 165.0),
         mirror.clone(),
     );
+
     let transform1 = Mat44::translation(Vec3::new(265.0, 0.0, 295.0))
         * Mat44::rotation(Vec3::new(0.0, 1.0, 0.0), (15.0 as FloatTy).to_radians());
     objects.push(Box::new(box1.transform(transform1)));
 
-    let box2 = make_box(
-        Vec3::all(0.0),
-        Vec3::new(165.0, 165.0, 165.0),
-        white.clone(),
-    );
+    let box2 = make_box(Vec3::all(0.0), Vec3::new(165.0, 165.0, 165.0), white);
     let transform2 = Mat44::translation(Vec3::new(130.0, 0.0, 65.0))
         * Mat44::rotation(Vec3::new(0.0, 1.0, 0.0), (-18.0 as FloatTy).to_radians());
     objects.push(Box::new(box2.transform(transform2)));

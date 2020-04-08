@@ -33,7 +33,7 @@ impl Sphere {
 }
 
 impl Hittable for Sphere {
-    fn is_hit_by(&self, ray: &Ray, tmin: FloatTy, tmax: Option<FloatTy>) -> Option<HitRecord> {
+    fn is_hit_by(&self, ray: Ray, tmin: FloatTy, tmax: Option<FloatTy>) -> Option<HitRecord> {
         let oc = ray.origin - self.center;
         let a = Vec3::dot(ray.direction, ray.direction);
         let b = Vec3::dot(oc, ray.direction) * 2.0;

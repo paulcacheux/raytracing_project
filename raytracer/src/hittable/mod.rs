@@ -19,6 +19,7 @@ pub use sphere::*;
 
 #[derive(Debug, Clone)]
 pub struct HitRecord {
+    pub ray: Ray,
     pub t: FloatTy,
     pub p: Vec3,
     pub normal: Vec3,
@@ -30,7 +31,7 @@ pub struct HitRecord {
 
 impl HitRecord {
     pub fn new(
-        ray: &Ray,
+        ray: Ray,
         t: FloatTy,
         p: Vec3,
         outward_normal: Vec3,
@@ -46,6 +47,7 @@ impl HitRecord {
         };
 
         HitRecord {
+            ray,
             t,
             p,
             normal,
@@ -58,7 +60,7 @@ impl HitRecord {
 }
 
 pub trait Hittable: Sync + Send {
-    fn is_hit_by(&self, ray: &Ray, tmin: FloatTy, tmax: Option<FloatTy>) -> Option<HitRecord>;
+    fn is_hit_by(&self, ray: Ray, tmin: FloatTy, tmax: Option<FloatTy>) -> Option<HitRecord>;
     fn bounding_box(&self) -> Option<AABB> {
         None
     }
@@ -67,7 +69,7 @@ pub trait Hittable: Sync + Send {
 pub type HittableList = Vec<Box<dyn Hittable>>;
 
 impl Hittable for HittableList {
-    fn is_hit_by(&self, ray: &Ray, tmin: FloatTy, tmax: Option<FloatTy>) -> Option<HitRecord> {
+    fn is_hit_by(&self, ray: Ray, tmin: FloatTy, tmax: Option<FloatTy>) -> Option<HitRecord> {
         self.as_slice().is_hit_by(ray, tmin, tmax)
     }
 
@@ -77,7 +79,7 @@ impl Hittable for HittableList {
 }
 
 impl Hittable for &[Box<dyn Hittable>] {
-    fn is_hit_by(&self, ray: &Ray, tmin: FloatTy, tmax: Option<FloatTy>) -> Option<HitRecord> {
+    fn is_hit_by(&self, ray: Ray, tmin: FloatTy, tmax: Option<FloatTy>) -> Option<HitRecord> {
         let mut current_closest = tmax;
         let mut final_record = None;
 
@@ -115,20 +117,16 @@ impl Hittable for &[Box<dyn Hittable>] {
 }
 
 pub trait HitCheckable: Sync + Send {
-    fn check_hit_by(&self, ray: &Ray, tmin: FloatTy, tmax: Option<FloatTy>) -> bool;
+    fn check_hit_by(&self, ray: Ray, tmin: FloatTy, tmax: Option<FloatTy>) -> bool;
 }
 
 impl<T: Hittable> HitCheckable for T {
-    fn check_hit_by(&self, ray: &Ray, tmin: FloatTy, tmax: Option<FloatTy>) -> bool {
+    fn check_hit_by(&self, ray: Ray, tmin: FloatTy, tmax: Option<FloatTy>) -> bool {
         self.is_hit_by(ray, tmin, tmax).is_some()
     }
 }
 
 pub trait HittableExt: Hittable + Sized {
-    fn flip_face(self) -> FlipFaceHittable<Self> {
-        FlipFaceHittable::new(self)
-    }
-
     fn transform(self, transform: Mat44) -> TransformHittable<Self> {
         TransformHittable::new(self, transform)
     }

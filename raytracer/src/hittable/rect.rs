@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use crate::hittable::{HitRecord, Hittable, HittableExt, AABB};
+use crate::hittable::{HitRecord, Hittable, AABB};
 use crate::material::Material;
 use crate::ray::Ray;
 use crate::utils;
@@ -40,7 +40,7 @@ impl XYRect {
 }
 
 impl Hittable for XYRect {
-    fn is_hit_by(&self, ray: &Ray, tmin: FloatTy, tmax: Option<FloatTy>) -> Option<HitRecord> {
+    fn is_hit_by(&self, ray: Ray, tmin: FloatTy, tmax: Option<FloatTy>) -> Option<HitRecord> {
         let t = (self.z - ray.origin.z) / ray.direction.z;
         if !utils::is_in_range(t, tmin, tmax) {
             return None;
@@ -109,7 +109,7 @@ impl YZRect {
 }
 
 impl Hittable for YZRect {
-    fn is_hit_by(&self, ray: &Ray, tmin: FloatTy, tmax: Option<FloatTy>) -> Option<HitRecord> {
+    fn is_hit_by(&self, ray: Ray, tmin: FloatTy, tmax: Option<FloatTy>) -> Option<HitRecord> {
         let t = (self.x - ray.origin.x) / ray.direction.x;
         if !utils::is_in_range(t, tmin, tmax) {
             return None;
@@ -178,7 +178,7 @@ impl XZRect {
 }
 
 impl Hittable for XZRect {
-    fn is_hit_by(&self, ray: &Ray, tmin: FloatTy, tmax: Option<FloatTy>) -> Option<HitRecord> {
+    fn is_hit_by(&self, ray: Ray, tmin: FloatTy, tmax: Option<FloatTy>) -> Option<HitRecord> {
         let t = (self.y - ray.origin.y) / ray.direction.y;
         if !utils::is_in_range(t, tmin, tmax) {
             return None;
@@ -228,9 +228,14 @@ pub fn make_box(min: Vec3, max: Vec3, material: Arc<dyn Material>) -> Vec<Box<dy
         material.clone(),
     )));
 
-    res.push(Box::new(
-        XYRect::new(min.x, max.x, min.y, max.y, min.z, material.clone()).flip_face(),
-    ));
+    res.push(Box::new(XYRect::new(
+        min.x,
+        max.x,
+        min.y,
+        max.y,
+        min.z,
+        material.clone(),
+    )));
 
     res.push(Box::new(XZRect::new(
         min.x,
@@ -241,9 +246,14 @@ pub fn make_box(min: Vec3, max: Vec3, material: Arc<dyn Material>) -> Vec<Box<dy
         material.clone(),
     )));
 
-    res.push(Box::new(
-        XZRect::new(min.x, max.x, min.z, max.z, min.y, material.clone()).flip_face(),
-    ));
+    res.push(Box::new(XZRect::new(
+        min.x,
+        max.x,
+        min.z,
+        max.z,
+        min.y,
+        material.clone(),
+    )));
 
     res.push(Box::new(YZRect::new(
         min.y,
@@ -254,9 +264,14 @@ pub fn make_box(min: Vec3, max: Vec3, material: Arc<dyn Material>) -> Vec<Box<dy
         material.clone(),
     )));
 
-    res.push(Box::new(
-        YZRect::new(min.y, max.y, min.z, max.z, min.x, material.clone()).flip_face(),
-    ));
+    res.push(Box::new(YZRect::new(
+        min.y,
+        max.y,
+        min.z,
+        max.z,
+        min.x,
+        material.clone(),
+    )));
 
     res
 }

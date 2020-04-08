@@ -43,7 +43,7 @@ macro_rules! check_inner_comp {
 }
 
 impl HitCheckable for AABB {
-    fn check_hit_by(&self, ray: &Ray, tmin: FloatTy, tmax: Option<FloatTy>) -> bool {
+    fn check_hit_by(&self, ray: Ray, tmin: FloatTy, tmax: Option<FloatTy>) -> bool {
         check_inner_comp!(self, x, ray, tmin, tmax);
         check_inner_comp!(self, y, ray, tmin, tmax);
         check_inner_comp!(self, z, ray, tmin, tmax);

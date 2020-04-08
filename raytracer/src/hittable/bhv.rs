@@ -25,7 +25,7 @@ impl BVHNode {
 }
 
 impl Hittable for BVHNode {
-    fn is_hit_by(&self, ray: &Ray, tmin: FloatTy, tmax: Option<FloatTy>) -> Option<HitRecord> {
+    fn is_hit_by(&self, ray: Ray, tmin: FloatTy, tmax: Option<FloatTy>) -> Option<HitRecord> {
         if !self.bounding_box.check_hit_by(ray, tmin, tmax) {
             return None;
         }
