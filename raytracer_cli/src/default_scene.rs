@@ -304,14 +304,14 @@ pub fn cornell_box() -> SceneDescription {
     )));
 
     let box1 = make_box(Pt3::origin(), Pt3::new(165.0, 330.0, 165.0), mirror.clone());
+    let transform1 = Mat44::new_translation(&Vec3::new(265.0, 0.0, 295.0))
+        * Mat44::from_axis_angle(&Vec3::y_axis(), (15.0 as FloatTy).to_radians());
 
-    let transform1 = Mat44::translation(Vec3::new(265.0, 0.0, 295.0))
-        * Mat44::rotation(Vec3::new(0.0, 1.0, 0.0), (15.0 as FloatTy).to_radians());
     objects.push(Box::new(box1.transform(transform1)));
 
     let box2 = make_box(Pt3::origin(), Pt3::new(165.0, 165.0, 165.0), white);
-    let transform2 = Mat44::translation(Vec3::new(130.0, 0.0, 65.0))
-        * Mat44::rotation(Vec3::new(0.0, 1.0, 0.0), (-18.0 as FloatTy).to_radians());
+    let transform2 = Mat44::new_translation(&Vec3::new(130.0, 0.0, 65.0))
+        * Mat44::from_axis_angle(&Vec3::y_axis(), (-18.0 as FloatTy).to_radians());
     objects.push(Box::new(box2.transform(transform2)));
 
     let declarations = hittable::build_bvh(objects);

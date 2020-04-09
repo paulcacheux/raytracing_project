@@ -1,11 +1,10 @@
-use nalgebra::{Point3, Vector3};
+use nalgebra::{Matrix4, Point3, Vector3};
 use rand;
 use rand::prelude::*;
 
 mod camera;
 mod color;
 pub mod hittable;
-mod mat44;
 pub mod material;
 mod ray;
 pub mod texture;
@@ -14,11 +13,11 @@ mod utils;
 pub type FloatTy = f64;
 pub type Vec3 = Vector3<FloatTy>;
 pub type Pt3 = Point3<FloatTy>;
+pub type Mat44 = Matrix4<FloatTy>;
 
 pub use crate::camera::*;
 pub use crate::color::*;
 pub use crate::hittable::{Hittable, HittableExt};
-pub use crate::mat44::*;
 pub use crate::ray::*;
 pub use crate::texture::Texture;
 

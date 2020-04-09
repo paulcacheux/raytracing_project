@@ -9,7 +9,7 @@ pub struct TransformHittable<H: Hittable> {
 
 impl<H: Hittable> TransformHittable<H> {
     pub fn new(inner: H, transform: Mat44) -> Self {
-        let inverse = transform.inverse();
+        let inverse = transform.try_inverse().unwrap();
         TransformHittable {
             inner,
             transform,
@@ -38,7 +38,7 @@ impl<H: Hittable> Hittable for TransformHittable<H> {
             for dy in &points {
                 for dz in &points {
                     let corner = Pt3::new(dx.x, dy.y, dz.z);
-                    let trans_corner = self.transform.mul_point(corner);
+                    let trans_corner = self.transform.transform_point(&corner);
 
                     if min_x.map(|m| trans_corner.x < m).unwrap_or(true) {
                         min_x = Some(trans_corner.x);
@@ -75,16 +75,16 @@ impl<H: Hittable> Hittable for TransformHittable<H> {
 
     fn is_hit_by(&self, ray: Ray, tmin: FloatTy, tmax: Option<FloatTy>) -> Option<HitRecord> {
         let new_ray = Ray::new(
-            self.inverse.mul_point(ray.origin),
-            self.inverse.mul_direction(ray.direction),
+            self.inverse.transform_point(&ray.origin),
+            self.inverse.transform_vector(&ray.direction),
         );
 
         if let Some(record) = self.inner.is_hit_by(new_ray, tmin, tmax) {
             Some(HitRecord::new(
                 new_ray,
                 record.t,
-                self.transform.mul_point(record.p),
-                self.transform.mul_direction(record.normal),
+                self.transform.transform_point(&record.p),
+                self.transform.transform_vector(&record.normal),
                 record.u,
                 record.v,
                 record.material,
