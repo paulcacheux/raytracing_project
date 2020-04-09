@@ -18,7 +18,7 @@ jobs:
               with:
                 command: build
                 args: --release
-            - uses: actions/cargo@v1
+            - uses: action-rs/cargo@v1
               with:
                 command: run
                 args: --release -- cornell -p=huge
