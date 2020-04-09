@@ -4,17 +4,17 @@ use super::{HitRecord, Hittable, AABB};
 use crate::fconsts;
 use crate::material::Material;
 use crate::utils;
-use crate::{FloatTy, Ray, Vec3};
+use crate::{FloatTy, Pt3, Ray, Vec3};
 
 #[derive(Debug, Clone)]
 pub struct Sphere {
-    pub center: Vec3,
+    pub center: Pt3,
     pub radius: FloatTy,
     pub material: Arc<dyn Material>,
 }
 
 impl Sphere {
-    pub fn new(center: Vec3, radius: FloatTy, material: Arc<dyn Material>) -> Self {
+    pub fn new(center: Pt3, radius: FloatTy, material: Arc<dyn Material>) -> Self {
         Sphere {
             center,
             radius,
@@ -22,8 +22,8 @@ impl Sphere {
         }
     }
 
-    fn compute_uv(&self, p: Vec3) -> (FloatTy, FloatTy) {
-        let d = (p - self.center).to_unit();
+    fn compute_uv(&self, p: Pt3) -> (FloatTy, FloatTy) {
+        let d = (p - self.center).normalize();
         let phi = d.z.atan2(d.x);
         let theta = d.y.asin();
         let u = 1.0 - (phi + fconsts::PI) / (2.0 * fconsts::PI);
@@ -35,9 +35,11 @@ impl Sphere {
 impl Hittable for Sphere {
     fn is_hit_by(&self, ray: Ray, tmin: FloatTy, tmax: Option<FloatTy>) -> Option<HitRecord> {
         let oc = ray.origin - self.center;
-        let a = Vec3::dot(ray.direction, ray.direction);
-        let b = Vec3::dot(oc, ray.direction) * 2.0;
-        let c = Vec3::dot(oc, oc) - self.radius * self.radius;
+
+        let a = ray.direction.dot(&ray.direction);
+        let b = oc.dot(&ray.direction) * 2.0;
+        let c = oc.dot(&oc) - self.radius * self.radius;
+
         let discriminant = b * b - 4.0 * a * c;
 
         if discriminant < 0.0 {
@@ -79,8 +81,8 @@ impl Hittable for Sphere {
 
     fn bounding_box(&self) -> Option<AABB> {
         Some(AABB {
-            min: self.center - Vec3::all(self.radius),
-            max: self.center + Vec3::all(self.radius),
+            min: self.center - Vec3::repeat(self.radius),
+            max: self.center + Vec3::repeat(self.radius),
         })
     }
 }

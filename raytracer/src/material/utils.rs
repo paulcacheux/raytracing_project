@@ -5,14 +5,14 @@ use rand_distr::{Distribution, UnitSphere};
 
 #[inline]
 pub fn reflect(v: Vec3, n: Vec3) -> Vec3 {
-    v - n * 2.0 * Vec3::dot(v, n)
+    v - v.dot(&n) * 2.0 * n
 }
 
 #[inline]
 pub fn refract(uv: Vec3, n: Vec3, n1_over_n2: FloatTy) -> Vec3 {
-    let cos_theta = Vec3::dot(-uv, n);
+    let cos_theta = (-uv).dot(&n);
     let r_out_parallel = (uv + n * cos_theta) * n1_over_n2;
-    let r_out_perp = n * -(1.0 - r_out_parallel.length_squared()).sqrt();
+    let r_out_perp = n * -(1.0 - r_out_parallel.norm_squared()).sqrt();
     r_out_parallel + r_out_perp
 }
 
@@ -27,7 +27,7 @@ pub fn schlick(cos: FloatTy, reflective_index: FloatTy) -> FloatTy {
 pub fn random_unit_hemisphere<R: Rng>(rng: &mut R, normal: Vec3) -> Vec3 {
     let v: [FloatTy; 3] = UnitSphere.sample(rng);
     let v: Vec3 = v.into();
-    if Vec3::dot(v, normal) > 0.0 {
+    if v.dot(&normal) > 0.0 {
         v
     } else {
         v

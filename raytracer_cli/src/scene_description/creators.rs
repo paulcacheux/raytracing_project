@@ -69,8 +69,8 @@ pub(crate) fn preset_creator(params: HashMap<String, SceneObject>) -> PresetConf
         width,
         height,
         sample_count,
-        look_from,
-        look_at,
+        look_from: look_from.into(),
+        look_at: look_at.into(),
         up,
         vfov,
         max_depth,
@@ -84,7 +84,7 @@ pub(crate) fn sphere_creator(params: HashMap<String, SceneObject>) -> Box<dyn Hi
     let material: Arc<dyn Material> =
         unwrap_scene_object!(params; "material"; SceneObject::Material(m) => m.clone());
 
-    Box::new(Sphere::new(center, radius, material))
+    Box::new(Sphere::new(center.into(), radius, material))
 }
 
 pub(crate) fn plane_creator(params: HashMap<String, SceneObject>) -> Box<dyn Hittable> {
@@ -93,7 +93,7 @@ pub(crate) fn plane_creator(params: HashMap<String, SceneObject>) -> Box<dyn Hit
     let material: Arc<dyn Material> =
         unwrap_scene_object!(params; "material"; SceneObject::Material(m) => m.clone());
 
-    Box::new(Plane::new(point, normal, material))
+    Box::new(Plane::new(point.into(), normal, material))
 }
 
 pub(crate) fn lambertian_creator(params: HashMap<String, SceneObject>) -> SceneObject {
@@ -104,7 +104,7 @@ pub(crate) fn lambertian_creator(params: HashMap<String, SceneObject>) -> SceneO
 pub(crate) fn light_creator(params: HashMap<String, SceneObject>) -> SceneObject {
     let emittance: Option<Vec3> =
         optional_scene_object!(params; "emittance"; SceneObject::Vec3(v) => *v);
-    let emittance = emittance.unwrap_or(Vec3::all(1.0));
+    let emittance = emittance.unwrap_or(Vec3::repeat(1.0));
     SceneObject::Material(Arc::new(Light::new(emittance)))
 }
 

@@ -1,5 +1,5 @@
 use super::{HitRecord, Hittable, AABB};
-use crate::{FloatTy, Mat44, Ray, Vec3};
+use crate::{FloatTy, Mat44, Pt3, Ray};
 
 pub struct TransformHittable<H: Hittable> {
     inner: H,
@@ -37,7 +37,7 @@ impl<H: Hittable> Hittable for TransformHittable<H> {
         for dx in &points {
             for dy in &points {
                 for dz in &points {
-                    let corner = Vec3::new(dx.x, dy.y, dz.z);
+                    let corner = Pt3::new(dx.x, dy.y, dz.z);
                     let trans_corner = self.transform.mul_point(corner);
 
                     if min_x.map(|m| trans_corner.x < m).unwrap_or(true) {
@@ -67,8 +67,8 @@ impl<H: Hittable> Hittable for TransformHittable<H> {
             }
         }
 
-        let min = Vec3::new(min_x.unwrap(), min_y.unwrap(), min_z.unwrap());
-        let max = Vec3::new(max_x.unwrap(), max_y.unwrap(), max_z.unwrap());
+        let min = Pt3::new(min_x.unwrap(), min_y.unwrap(), min_z.unwrap());
+        let max = Pt3::new(max_x.unwrap(), max_y.unwrap(), max_z.unwrap());
 
         Some(AABB::new(min, max))
     }

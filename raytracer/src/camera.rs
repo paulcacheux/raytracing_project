@@ -1,19 +1,17 @@
-use crate::ray::Ray;
-use crate::vec3::Vec3;
-use crate::FloatTy;
+use crate::{FloatTy, Pt3, Ray, Vec3};
 
 #[derive(Debug, Clone)]
 pub struct Camera {
-    origin: Vec3,
-    lower_left: Vec3,
+    origin: Pt3,
+    lower_left: Pt3,
     horizontal: Vec3,
     vertical: Vec3,
 }
 
 impl Camera {
     pub fn new(
-        look_from: Vec3,
-        look_at: Vec3,
+        look_from: Pt3,
+        look_at: Pt3,
         vertical_up: Vec3,
         vfov: FloatTy,
         aspect_ratio: FloatTy,
@@ -22,9 +20,9 @@ impl Camera {
         let half_height = (theta / 2.0).tan();
         let half_width = aspect_ratio * half_height;
 
-        let w = (look_from - look_at).to_unit();
-        let u = Vec3::cross(vertical_up, w).to_unit();
-        let v = Vec3::cross(w, u);
+        let w = (look_from - look_at).normalize();
+        let u = vertical_up.cross(&w).normalize();
+        let v = w.cross(&u);
 
         Camera {
             origin: look_from,

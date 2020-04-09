@@ -11,7 +11,7 @@ use rand;
 use rand::prelude::*;
 use threadpool::ThreadPool;
 
-use raytracer::{self, Camera, Color, FloatTy, Hittable, Vec3};
+use raytracer::{self, Camera, Color, FloatTy, Hittable, Pt3, Vec3};
 
 mod default_scene;
 mod pixel_data;
@@ -25,8 +25,8 @@ use scene_description::{SceneDescription, SceneDescriptionBuilder};
 pub struct PresetConfig {
     width: usize,
     height: usize,
-    look_from: Vec3,
-    look_at: Vec3,
+    look_from: Pt3,
+    look_at: Pt3,
     up: Vec3,
     vfov: FloatTy,
     sample_count: usize,
@@ -115,7 +115,7 @@ fn main() {
         aspect_ratio,
     ));
 
-    let background_color = preset.background.unwrap_or(Vec3::all(0.0));
+    let background_color = preset.background.unwrap_or(Vec3::repeat(0.0));
 
     let sample_count = preset.sample_count;
 

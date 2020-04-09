@@ -43,7 +43,7 @@ pub Object: SceneObject = {
 };
 
 pub Vec3: Vec3 = {
-    "vec3" "(" <c:Float> ")" => Vec3::all(c),
+    "vec3" "(" <c:Float> ")" => Vec3::repeat(c),
     "vec3" "(" <x:Float> "," <y:Float> "," <z:Float> ")" => Vec3::new(x, y, z),
 };
 

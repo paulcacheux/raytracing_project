@@ -22,11 +22,11 @@ impl Metal {
 impl Material for Metal {
     fn scatter(&self, ray: &Ray, record: &HitRecord) -> Option<MaterialScatter> {
         let mut rng = rand::thread_rng();
-        let reflected = utils::reflect(ray.direction.to_unit(), record.normal);
-        let scattered = if Vec3::dot(reflected, record.normal) > 0.0 {
+        let reflected = utils::reflect(ray.direction.normalize(), record.normal);
+        let scattered = if reflected.dot(&record.normal) > 0.0 {
             let sample_sphere: [FloatTy; 3] = UnitSphere.sample(&mut rng);
             let sample_sphere: Vec3 = sample_sphere.into();
-            let scattered = Ray::new(record.p, reflected.to_unit() + sample_sphere * self.fuzz);
+            let scattered = Ray::new(record.p, reflected.normalize() + sample_sphere * self.fuzz);
             Some(scattered)
         } else {
             None

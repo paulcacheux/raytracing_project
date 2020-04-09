@@ -1,6 +1,6 @@
 use super::{Material, MaterialScatter};
 use crate::hittable::HitRecord;
-use crate::{FloatTy, Ray, Vec3};
+use crate::{FloatTy, Pt3, Ray, Vec3};
 
 #[derive(Debug, Clone)]
 pub struct Light {
@@ -10,7 +10,7 @@ pub struct Light {
 impl Light {
     pub fn white() -> Self {
         Light {
-            emittance: Vec3::all(1.0),
+            emittance: Vec3::repeat(1.0),
         }
     }
 
@@ -24,7 +24,7 @@ impl Material for Light {
         None
     }
 
-    fn emit(&self, _u: FloatTy, _v: FloatTy, _point: Vec3) -> Vec3 {
+    fn emit(&self, _u: FloatTy, _v: FloatTy, _point: Pt3) -> Vec3 {
         self.emittance
     }
 }

@@ -1,3 +1,4 @@
+use nalgebra::{Point3, Vector3};
 use rand;
 use rand::prelude::*;
 
@@ -9,9 +10,10 @@ pub mod material;
 mod ray;
 pub mod texture;
 mod utils;
-mod vec3;
 
 pub type FloatTy = f64;
+pub type Vec3 = Vector3<FloatTy>;
+pub type Pt3 = Point3<FloatTy>;
 
 pub use crate::camera::*;
 pub use crate::color::*;
@@ -19,7 +21,6 @@ pub use crate::hittable::{Hittable, HittableExt};
 pub use crate::mat44::*;
 pub use crate::ray::*;
 pub use crate::texture::Texture;
-pub use crate::vec3::*;
 
 const Q: FloatTy = 0.7;
 
@@ -45,12 +46,13 @@ pub fn compute_color<R: Rng>(
                     */
 
                     let scattered_color = compute_color(objects, scattered, background, rng);
-                    Vec3::memberwise_product(scattered_color, brdf) / Q
+
+                    scattered_color.component_mul(&brdf) / Q
                 } else {
-                    Vec3::zero()
+                    Vec3::zeros()
                 }
             } else {
-                Vec3::zero()
+                Vec3::zeros()
             };
 
             emitted + scat_value

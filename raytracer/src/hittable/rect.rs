@@ -2,10 +2,8 @@ use std::sync::Arc;
 
 use crate::hittable::{HitRecord, Hittable, AABB};
 use crate::material::Material;
-use crate::ray::Ray;
 use crate::utils;
-use crate::vec3::Vec3;
-use crate::FloatTy;
+use crate::{FloatTy, Pt3, Ray, Vec3};
 
 const DELTA: FloatTy = 0.001;
 
@@ -72,8 +70,8 @@ impl Hittable for XYRect {
 
     fn bounding_box(&self) -> Option<AABB> {
         Some(AABB::new(
-            Vec3::new(self.x0, self.y0, self.z - DELTA),
-            Vec3::new(self.x1, self.y1, self.z + DELTA),
+            Pt3::new(self.x0, self.y0, self.z - DELTA),
+            Pt3::new(self.x1, self.y1, self.z + DELTA),
         ))
     }
 }
@@ -141,8 +139,8 @@ impl Hittable for YZRect {
 
     fn bounding_box(&self) -> Option<AABB> {
         Some(AABB::new(
-            Vec3::new(self.x - DELTA, self.y0, self.z0),
-            Vec3::new(self.x + DELTA, self.y1, self.z1),
+            Pt3::new(self.x - DELTA, self.y0, self.z0),
+            Pt3::new(self.x + DELTA, self.y1, self.z1),
         ))
     }
 }
@@ -210,13 +208,13 @@ impl Hittable for XZRect {
 
     fn bounding_box(&self) -> Option<AABB> {
         Some(AABB::new(
-            Vec3::new(self.x0, self.y - DELTA, self.z0),
-            Vec3::new(self.x1, self.y + DELTA, self.z1),
+            Pt3::new(self.x0, self.y - DELTA, self.z0),
+            Pt3::new(self.x1, self.y + DELTA, self.z1),
         ))
     }
 }
 
-pub fn make_box(min: Vec3, max: Vec3, material: Arc<dyn Material>) -> Vec<Box<dyn Hittable>> {
+pub fn make_box(min: Pt3, max: Pt3, material: Arc<dyn Material>) -> Vec<Box<dyn Hittable>> {
     let mut res: Vec<Box<dyn Hittable>> = Vec::with_capacity(6);
 
     res.push(Box::new(XYRect::new(

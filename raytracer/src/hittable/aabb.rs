@@ -1,25 +1,25 @@
 use crate::hittable::HitCheckable;
 use crate::utils;
-use crate::{FloatTy, Ray, Vec3};
+use crate::{FloatTy, Pt3, Ray};
 
 #[derive(Debug, Clone, Copy)]
 pub struct AABB {
-    pub min: Vec3,
-    pub max: Vec3,
+    pub min: Pt3,
+    pub max: Pt3,
 }
 
 impl AABB {
-    pub fn new(min: Vec3, max: Vec3) -> Self {
+    pub fn new(min: Pt3, max: Pt3) -> Self {
         AABB { min, max }
     }
 
     pub fn surrounding(a: AABB, b: AABB) -> AABB {
-        let min = Vec3::new(
+        let min = Pt3::new(
             utils::fmin(a.min.x, b.min.x),
             utils::fmin(a.min.y, b.min.y),
             utils::fmin(a.min.z, b.min.z),
         );
-        let max = Vec3::new(
+        let max = Pt3::new(
             utils::fmax(a.max.x, b.max.x),
             utils::fmax(a.max.y, b.max.y),
             utils::fmax(a.max.z, b.max.z),

@@ -1,6 +1,5 @@
 use crate::utils::clamp;
-use crate::FloatTy;
-use crate::Vec3;
+use crate::{FloatTy, Vec3};
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Color {

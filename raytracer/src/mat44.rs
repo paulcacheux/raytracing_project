@@ -1,4 +1,4 @@
-use crate::{FloatTy, Vec3};
+use crate::{FloatTy, Pt3, Vec3};
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Mat44 {
@@ -27,7 +27,7 @@ impl Mat44 {
     }
 
     pub fn rotation(axis: Vec3, angle: FloatTy) -> Self {
-        let axis = axis.to_unit();
+        let axis = axis.normalize();
         let c = angle.cos();
         let s = angle.sin();
         let t = 1.0 - c;
@@ -55,7 +55,7 @@ impl Mat44 {
         .into()
     }
 
-    pub fn mul_point(&self, point: Vec3) -> Vec3 {
+    pub fn mul_point(&self, point: Pt3) -> Pt3 {
         let other = [point.x, point.y, point.z, 1.0];
         let mut res = [0.0; 3];
         for i in 0..3 {

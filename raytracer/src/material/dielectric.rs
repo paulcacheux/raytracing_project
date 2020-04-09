@@ -20,7 +20,7 @@ impl Dielectric {
 impl Material for Dielectric {
     fn scatter(&self, ray: &Ray, record: &HitRecord) -> Option<MaterialScatter> {
         let mut rng = rand::thread_rng();
-        let attenuation = Vec3::all(1.0);
+        let attenuation = Vec3::repeat(1.0);
 
         let n1_over_n2 = if record.front_face {
             1.0 / self.reflective_index
@@ -28,8 +28,8 @@ impl Material for Dielectric {
             self.reflective_index
         };
 
-        let uv = ray.direction.to_unit();
-        let cos_theta = fmin(Vec3::dot(-uv, record.normal), 1.0);
+        let uv = ray.direction.normalize();
+        let cos_theta = fmin((-uv).dot(&record.normal), 1.0);
         let sin_theta = (1.0 - cos_theta * cos_theta).sqrt();
 
         let reflect_prob = utils::schlick(cos_theta, self.reflective_index);

@@ -25,7 +25,6 @@ impl Texture for PerlinTexture {
             .inner
             .get([self.freq * u as FloatTy, self.freq * v as FloatTy]);
         let coeff = (coeff + 1.0) / 2.0;
-        // println!("{}", coeff);
-        Vec3::all(1.0) * coeff
+        Vec3::repeat(1.0) * coeff
     }
 }
