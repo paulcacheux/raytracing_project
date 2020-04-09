@@ -54,7 +54,7 @@ impl Hittable for XYRect {
         let u = (x - self.x0) / (self.x1 - self.x0);
         let v = (y - self.y0) / (self.y1 - self.y0);
 
-        let outward_normal = Vec3::new(0.0, 0.0, 1.0);
+        let outward_normal = Vec3::z_axis().into_inner();
         let p = ray.point_at_parameter(t);
 
         Some(HitRecord::new(
@@ -123,7 +123,7 @@ impl Hittable for YZRect {
         let u = (y - self.y0) / (self.y1 - self.y0);
         let v = (z - self.z0) / (self.z1 - self.z0);
 
-        let outward_normal = Vec3::new(1.0, 0.0, 0.0);
+        let outward_normal = Vec3::x_axis().into_inner();
         let p = ray.point_at_parameter(t);
 
         Some(HitRecord::new(
@@ -192,7 +192,7 @@ impl Hittable for XZRect {
         let u = (x - self.x0) / (self.x1 - self.x0);
         let v = (z - self.z0) / (self.z1 - self.z0);
 
-        let outward_normal = Vec3::new(0.0, 1.0, 0.0);
+        let outward_normal = Vec3::y_axis().into_inner();
         let p = ray.point_at_parameter(t);
 
         Some(HitRecord::new(
