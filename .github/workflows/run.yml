@@ -14,11 +14,11 @@ jobs:
               with:
                 toolchain: nightly
             - uses: actions/checkout@v2
-            - uses: action-rs/cargo@v1
+            - uses: actions-rs/cargo@v1
               with:
                 command: build
                 args: --release
-            - uses: action-rs/cargo@v1
+            - uses: actions-rs/cargo@v1
               with:
                 command: run
                 args: --release -- cornell -p=huge
