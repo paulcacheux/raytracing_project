@@ -1,5 +1,6 @@
 use std::fs;
 use std::io;
+use std::str::FromStr;
 use std::sync::mpsc;
 use std::sync::Arc;
 
@@ -85,6 +86,14 @@ fn main() {
                 .value_name("PRESET")
                 .takes_value(true),
         )
+        .arg(
+            Arg::with_name("job_count")
+                .help("Set the number of jobs (threads) to run on")
+                .short("j")
+                .long("job")
+                .default_value("4")
+                .validator(validate_integer),
+        )
         .get_matches();
 
     let scene = search_scene(matches.value_of("INPUT").unwrap());
@@ -92,6 +101,7 @@ fn main() {
     let objects = Arc::new(scene.declarations);
     let preset_name = matches.value_of("preset").unwrap_or("default");
     let preset = scene.presets.get(preset_name).unwrap();
+    let job_count = u32::from_str(matches.value_of("job_count").unwrap()).unwrap();
 
     let nx: usize = preset.width;
     let ny: usize = preset.height;
@@ -106,14 +116,13 @@ fn main() {
     ));
 
     let background_color = preset.background.unwrap_or(Vec3::all(0.0));
-    let max_depth = preset.max_depth;
 
     let sample_count = preset.sample_count;
 
     let mut image = PixelData::new(nx, ny);
 
     let (send, recv) = mpsc::channel();
-    let pool = ThreadPool::new(16);
+    let pool = ThreadPool::new(job_count as usize);
 
     for j in 0..ny {
         let local_send = send.clone();
@@ -154,4 +163,10 @@ fn main() {
 
     let output_path = "./last_result.png";
     image.save(output_path).unwrap();
+}
+
+fn validate_integer(input_value: String) -> Result<(), String> {
+    u32::from_str(&input_value)
+        .map(|_| ())
+        .map_err(|err| err.to_string())
 }

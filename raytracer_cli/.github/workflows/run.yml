@@ -1,0 +1,29 @@
+name: Run
+
+on:
+    push
+
+jobs:
+    cornell_box:
+        name: Cornell Box
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Install rust nightly
+              uses: actions-rs/toolchain@v1
+              with:
+                toolchain: nightly
+            - uses: actions/checkout@v2
+            - uses: actions/cargo@v1
+              with:
+                command: build
+                args: --release
+            - uses: actions/cargo@v1
+              with:
+                command: run
+                args: --release -- cornell -p=huge
+
+            - uses: actions/upload-artifact@v1
+              with:
+                name: result.png
+                path: ./last_result.png

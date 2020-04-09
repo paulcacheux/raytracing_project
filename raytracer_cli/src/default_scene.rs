@@ -245,6 +245,11 @@ pub fn cornell_box() -> SceneDescription {
         ..default_preset
     };
 
+    let huge_preset = PresetConfig {
+        sample_count: 10000,
+        ..default_preset
+    };
+
     let red = Arc::new(Lambertian::from_solid_color(Vec3::new(0.7, 0.12, 0.05)));
     let wall = Arc::new(Lambertian::from_solid_color(Vec3::all(1.0)));
     let white = Arc::new(Lambertian::from_solid_color(Vec3::new(0.95, 0.95, 0.95)));
@@ -320,6 +325,7 @@ pub fn cornell_box() -> SceneDescription {
             "default".into() => default_preset,
             "test".into() => test_preset,
             "complete".into() => complete_preset,
+            "huge".into() => huge_preset,
         },
         declarations,
     }
