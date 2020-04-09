@@ -26,20 +26,34 @@ impl Color {
     }
 
     pub fn average(colors: &[Color]) -> Self {
-        let len = colors.len() as FloatTy;
+        let mut count: u32 = 0;
 
         let mut tr = 0.0;
         let mut tg = 0.0;
         let mut tb = 0.0;
         for color in colors {
+            if color.r.is_nan() || color.g.is_nan() || color.b.is_nan() {
+                continue;
+            }
+
             tr += color.r;
             tg += color.g;
             tb += color.b;
+            count += 1;
         }
 
-        let r = tr / len;
-        let g = tg / len;
-        let b = tb / len;
+        if count == 0 {
+            return Color {
+                r: 0.0,
+                g: 0.0,
+                b: 0.0,
+            };
+        }
+
+        let count = count as FloatTy;
+        let r = tr / count;
+        let g = tg / count;
+        let b = tb / count;
 
         Color { r, g, b }
     }

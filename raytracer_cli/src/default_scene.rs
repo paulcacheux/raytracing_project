@@ -247,7 +247,7 @@ pub fn cornell_box() -> SceneDescription {
 
     let huge_preset = PresetConfig {
         sample_count: 10000,
-        ..default_preset
+        ..complete_preset
     };
 
     let red = Arc::new(Lambertian::from_solid_color(Vec3::new(0.7, 0.12, 0.05)));
