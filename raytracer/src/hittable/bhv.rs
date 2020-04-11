@@ -71,8 +71,6 @@ fn build_bvh_raw<R: Rng>(mut objects: Vec<Box<dyn Hittable>>, rng: &mut R) -> Bo
 }
 
 pub fn build_bvh(objects: Vec<Box<dyn Hittable>>) -> Vec<Box<dyn Hittable>> {
-    let mut rng = rand::thread_rng();
-
     let mut bb_objects = Vec::new();
     let mut inf_objects = Vec::new();
     for obj in objects {
@@ -83,8 +81,11 @@ pub fn build_bvh(objects: Vec<Box<dyn Hittable>>) -> Vec<Box<dyn Hittable>> {
         }
     }
 
-    let bvh = build_bvh_raw(bb_objects, &mut rng);
-    inf_objects.push(bvh);
+    if !bb_objects.is_empty() {
+        let mut rng = rand::thread_rng();
+        let bvh = build_bvh_raw(bb_objects, &mut rng);
+        inf_objects.push(bvh);
+    }
     inf_objects
 }
 

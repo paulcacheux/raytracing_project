@@ -18,6 +18,7 @@ maplit = "1.0"
 clap = "2.33"
 indicatif = "0.14"
 image = "0.23"
+tobj = "1.0"
 
 [dependencies.lalrpop-util]
 version = "0.18"

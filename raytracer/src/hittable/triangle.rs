@@ -16,7 +16,22 @@ pub struct Triangle {
 }
 
 impl Triangle {
-    pub fn new(v0: Pt3, v1: Pt3, v2: Pt3, normal: Vec3, material: Arc<dyn Material>) -> Self {
+    pub fn new(
+        v0: Pt3,
+        v1: Pt3,
+        v2: Pt3,
+        normal: Option<Vec3>,
+        material: Arc<dyn Material>,
+    ) -> Self {
+        let normal = if let Some(normal) = normal {
+            normal
+        } else {
+            let v0v1 = v1 - v0;
+            let v0v2 = v2 - v0;
+            v0v1.cross(&v0v2)
+        }
+        .normalize();
+
         Triangle {
             v0,
             v1,
@@ -70,5 +85,15 @@ impl Hittable for Triangle {
             v,
             self.material.clone(),
         ))
+    }
+
+    fn bounding_box(&self) -> Option<AABB> {
+        // We need this delta because if the triangle is in an axis plane,
+        // the bonuding box will be empty in one dimension thus failing
+        // its purpose
+        let delta = Vec3::repeat(0.1);
+        let min = self.v0.inf(&self.v1.inf(&self.v2)) - delta;
+        let max = self.v0.sup(&self.v1.sup(&self.v2)) + delta;
+        Some(AABB::new(min, max))
     }
 }

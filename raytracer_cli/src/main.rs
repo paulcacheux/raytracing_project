@@ -14,6 +14,7 @@ use threadpool::ThreadPool;
 use raytracer::{self, Camera, Color, FloatTy, Hittable, Pt3, Vec3};
 
 mod default_scene;
+mod obj;
 mod pixel_data;
 mod scene_description;
 lalrpop_mod!(pub grammar);
@@ -62,7 +63,13 @@ fn search_scene(name: &str) -> SceneDescription {
         "random_balls" => default_scene::default_scene_builder(),
         "two_spheres" => default_scene::two_spheres(),
         "cornell" => default_scene::cornell_box(),
-        other => parse_input_file(other).unwrap(),
+        other => {
+            if other.ends_with(".obj") {
+                obj::load_obj(other).unwrap()
+            } else {
+                parse_input_file(other).unwrap()
+            }
+        }
     }
 }
 
