@@ -6,40 +6,119 @@ use crate::material::Material;
 use crate::utils;
 use crate::{FloatTy, Pt3, Ray, Vec3};
 
-#[derive(Debug, Clone)]
-pub struct Triangle {
-    pub v0: Pt3,
-    pub v1: Pt3,
-    pub v2: Pt3,
-    pub normal: Vec3,
-    pub material: Arc<dyn Material>,
+type TexCoords = [FloatTy; 2];
+
+pub struct TriangleBuilder {
+    points: [Pt3; 3],
+    normals: Option<[Vec3; 3]>,
+    texcoords: Option<[TexCoords; 3]>,
+    material: Arc<dyn Material>,
 }
 
-impl Triangle {
-    pub fn new(
-        v0: Pt3,
-        v1: Pt3,
-        v2: Pt3,
-        normal: Option<Vec3>,
-        material: Arc<dyn Material>,
-    ) -> Self {
-        let normal = if let Some(normal) = normal {
-            normal
+impl TriangleBuilder {
+    pub fn new(points: [Pt3; 3], material: Arc<dyn Material>) -> Self {
+        TriangleBuilder {
+            points,
+            normals: None,
+            texcoords: None,
+            material,
+        }
+    }
+
+    pub fn with_normals(self, normals: [Vec3; 3]) -> Self {
+        TriangleBuilder {
+            normals: Some(normals),
+            ..self
+        }
+    }
+
+    pub fn with_texcoords(self, texcoords: [TexCoords; 3]) -> Self {
+        TriangleBuilder {
+            texcoords: Some(texcoords),
+            ..self
+        }
+    }
+
+    pub fn build(self) -> Triangle {
+        let v0 = self.points[0];
+        let v1 = self.points[1];
+        let v2 = self.points[2];
+
+        let normal = if let Some(normals) = self.normals {
+            TriangleNormal::Barycentric(
+                normals[0].normalize(),
+                normals[1].normalize(),
+                normals[2].normalize(),
+            )
         } else {
             let v0v1 = v1 - v0;
             let v0v2 = v2 - v0;
-            v0v1.cross(&v0v2)
-        }
-        .normalize();
+            TriangleNormal::Uniform(v0v1.cross(&v0v2).normalize())
+        };
+
+        let texcoords = if let Some(coords) = self.texcoords {
+            TriangleTexCoords::Barycentric(coords[0], coords[1], coords[2])
+        } else {
+            TriangleTexCoords::NoTexture
+        };
 
         Triangle {
             v0,
             v1,
             v2,
             normal,
-            material,
+            texcoords,
+            material: self.material,
         }
     }
+}
+
+#[derive(Debug, Clone)]
+pub enum TriangleNormal {
+    Uniform(Vec3),
+    Barycentric(Vec3, Vec3, Vec3),
+}
+
+impl TriangleNormal {
+    pub fn compute_normal(&self, u: FloatTy, v: FloatTy) -> Vec3 {
+        match self {
+            TriangleNormal::Uniform(n) => *n,
+            TriangleNormal::Barycentric(a, b, c) => {
+                let w = 1.0 - u - v;
+                a * w + b * u + c * v
+            }
+        }
+    }
+}
+
+#[derive(Debug, Clone)]
+pub enum TriangleTexCoords {
+    NoTexture,
+    Barycentric(TexCoords, TexCoords, TexCoords),
+}
+
+impl TriangleTexCoords {
+    pub fn compute_uv(&self, u: FloatTy, v: FloatTy) -> (FloatTy, FloatTy) {
+        match self {
+            TriangleTexCoords::NoTexture => (u, v),
+            TriangleTexCoords::Barycentric(a, b, c) => {
+                let w = 1.0 - u - v;
+                let tu = a[0] * w + b[0] * u + c[0] * v;
+                let tv = a[1] * w + b[1] * u + c[1] * v;
+                (tu, tv)
+            }
+        }
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct Triangle {
+    pub v0: Pt3,
+    pub v1: Pt3,
+    pub v2: Pt3,
+    pub normal: TriangleNormal,
+    pub texcoords: TriangleTexCoords,
+    pub material: Arc<dyn Material>,
 }
 
 impl Hittable for Triangle {
@@ -76,11 +155,14 @@ impl Hittable for Triangle {
 
         let p = ray.point_at_parameter(t);
 
+        let normal = self.normal.compute_normal(u, v);
+        let (u, v) = self.texcoords.compute_uv(u, v);
+
         Some(HitRecord::new(
             ray,
             t,
             p,
-            self.normal,
+            normal,
             u,
             v,
             self.material.clone(),
