@@ -11,8 +11,7 @@ use raytracer::material::{Dielectric, Lambertian, Light, Metal};
 use raytracer::texture::{CheckerTexture, ImageTexture, SolidTexture};
 use raytracer::{self, FloatTy, Hittable, HittableExt, Mat44, Pt3, Vec3};
 
-use crate::scene_description::SceneDescription;
-use crate::PresetConfig;
+use crate::{PresetConfig, SceneDescription};
 
 pub fn default_scene_builder() -> SceneDescription {
     let default_preset = PresetConfig {

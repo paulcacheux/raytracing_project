@@ -1,12 +1,10 @@
-use std::fs;
-use std::io;
+use std::collections::HashMap;
 use std::str::FromStr;
 use std::sync::mpsc;
 use std::sync::Arc;
 
 use clap::{App, Arg};
 use indicatif::{ProgressBar, ProgressStyle};
-use lalrpop_util::lalrpop_mod;
 use rand;
 use rand::prelude::*;
 use threadpool::ThreadPool;
@@ -16,11 +14,8 @@ use raytracer::{self, Camera, Color, FloatTy, Hittable, Pt3, Vec3};
 mod default_scene;
 mod obj;
 mod pixel_data;
-mod scene_description;
-lalrpop_mod!(pub grammar);
 
 use pixel_data::PixelData;
-use scene_description::{SceneDescription, SceneDescriptionBuilder};
 
 #[derive(Debug)]
 pub struct PresetConfig {
@@ -32,6 +27,11 @@ pub struct PresetConfig {
     vfov: FloatTy,
     sample_count: usize,
     background: Option<Vec3>,
+}
+
+pub struct SceneDescription {
+    pub declarations: Vec<Box<dyn Hittable>>,
+    pub presets: HashMap<String, PresetConfig>,
 }
 
 fn compute_pixel<R: Rng>(
@@ -47,29 +47,12 @@ fn compute_pixel<R: Rng>(
     Color::from_vec3(color_vec)
 }
 
-fn parse_input_file(path: &str) -> io::Result<SceneDescription> {
-    let content = fs::read_to_string(path)?;
-
-    let mut scene_description = SceneDescriptionBuilder::default();
-    let parser = grammar::ProgramParser::new();
-    parser.parse(&mut scene_description, &content).unwrap();
-
-    let scene = scene_description.build();
-    Ok(scene)
-}
-
 fn search_scene(name: &str) -> SceneDescription {
     match name {
         "random_balls" => default_scene::default_scene_builder(),
         "two_spheres" => default_scene::two_spheres(),
         "cornell" => default_scene::cornell_box(),
-        other => {
-            if other.ends_with(".obj") {
-                obj::load_obj(other).unwrap()
-            } else {
-                parse_input_file(other).unwrap()
-            }
-        }
+        other => obj::load_obj(other).unwrap(),
     }
 }
 
