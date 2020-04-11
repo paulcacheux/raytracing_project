@@ -5,14 +5,14 @@ use crate::ray::Ray;
 use crate::{FloatTy, Mat44, Pt3, Vec3};
 
 mod aabb;
-mod bhv;
+mod bvh;
 mod operation;
 mod plane;
 mod rect;
 mod sphere;
 mod triangle;
 pub use aabb::*;
-pub use bhv::*;
+pub use bvh::*;
 pub use operation::*;
 pub use plane::*;
 pub use rect::*;
