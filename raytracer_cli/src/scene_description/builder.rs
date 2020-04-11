@@ -89,7 +89,6 @@ lazy_static! {
         "up".to_string() => (SceneObjectKind::Vec3, true),
         "vfov".to_string() => (SceneObjectKind::Float, true),
         "sample_count".to_string() => (SceneObjectKind::Float, true),
-        "max_depth".to_string() => (SceneObjectKind::Float, true),
         "background".to_string() => (SceneObjectKind::Vec3, false),
     };
 }

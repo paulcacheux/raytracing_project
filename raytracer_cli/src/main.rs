@@ -30,7 +30,6 @@ pub struct PresetConfig {
     up: Vec3,
     vfov: FloatTy,
     sample_count: usize,
-    max_depth: usize,
     background: Option<Vec3>,
 }
 

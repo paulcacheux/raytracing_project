@@ -23,7 +23,6 @@ pub fn default_scene_builder() -> SceneDescription {
         up: Vec3::new(0.0, 1.0, 0.0),
         vfov: 20.0,
         sample_count: 1,
-        max_depth: 3,
         background: Some(Vec3::repeat(0.1)),
     };
 
@@ -35,7 +34,6 @@ pub fn default_scene_builder() -> SceneDescription {
         up: Vec3::new(0.0, 1.0, 0.0),
         vfov: 20.0,
         sample_count: 12,
-        max_depth: 5,
         background: Some(Vec3::repeat(0.1)),
     };
 
@@ -47,7 +45,6 @@ pub fn default_scene_builder() -> SceneDescription {
         up: Vec3::new(0.0, 1.0, 0.0),
         vfov: 20.0,
         sample_count: 128,
-        max_depth: 10,
         background: Some(Vec3::repeat(0.1)),
     };
 
@@ -147,7 +144,6 @@ pub fn two_spheres() -> SceneDescription {
         up: Vec3::new(0.0, 1.0, 0.0),
         vfov: 60.0,
         sample_count: 1,
-        max_depth: 3,
         background: None,
     };
 
@@ -155,7 +151,6 @@ pub fn two_spheres() -> SceneDescription {
         width: 900,
         height: 600,
         sample_count: 12,
-        max_depth: 3,
         ..default_preset
     };
 
@@ -163,7 +158,6 @@ pub fn two_spheres() -> SceneDescription {
         width: 1200,
         height: 800,
         sample_count: 128,
-        max_depth: 10,
         ..default_preset
     };
 
@@ -225,7 +219,6 @@ pub fn cornell_box() -> SceneDescription {
         up: Vec3::new(0.0, 1.0, 0.0),
         vfov: 40.0,
         sample_count: 40,
-        max_depth: 5,
         background: None,
     };
 
@@ -233,7 +226,6 @@ pub fn cornell_box() -> SceneDescription {
         width: 600,
         height: 600,
         sample_count: 128,
-        max_depth: 40,
         ..default_preset
     };
 
@@ -241,7 +233,6 @@ pub fn cornell_box() -> SceneDescription {
         width: 600,
         height: 600,
         sample_count: 1024,
-        max_depth: 10,
         ..default_preset
     };
 
