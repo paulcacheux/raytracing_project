@@ -10,12 +10,14 @@ mod operation;
 mod plane;
 mod rect;
 mod sphere;
+mod triangle;
 pub use aabb::*;
 pub use bhv::*;
 pub use operation::*;
 pub use plane::*;
 pub use rect::*;
 pub use sphere::*;
+pub use triangle::*;
 
 #[derive(Debug, Clone)]
 pub struct HitRecord {
