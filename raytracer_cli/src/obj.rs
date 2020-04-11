@@ -46,7 +46,7 @@ fn presets_for_obj(path: &str) -> HashMap<String, PresetConfig> {
             up: Vec3::new(0.0, 1.0, 0.0),
             vfov: 45.0,
             sample_count: 1,
-            background: Some(Vec3::repeat(0.2)),
+            background: Some(Vec3::new(138.0, 191.0, 233.0) / 256.0),
         }
     } else {
         unimplemented!()
