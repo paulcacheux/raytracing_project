@@ -11,16 +11,19 @@ jobs:
         steps:
             - name: Checkout source code
               uses: actions/checkout@v2
+
             - name: Cache cargo registry
               uses: actions/cache@v1
               with:
                 path: ~/.cargo/registry
                 key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
+
             - name: Cache cargo index
               uses: actions/cache@v1
               with:
                 path: ~/.cargo/git
                 key: ${{ runner.os }}-cargo-index-${{ hashFiles('**/Cargo.lock') }}
+
             - name: Cache cargo build
               uses: actions/cache@v1
               with:
@@ -31,16 +34,15 @@ jobs:
               uses: actions-rs/toolchain@v1
               with:
                 toolchain: nightly
+
             - name: Build raytracer
               uses: actions-rs/cargo@v1
               with:
                 command: build
-                args: --release
+                args: --release --no-default-features
+
             - name: Run
-              uses: actions-rs/cargo@v1
-              with:
-                command: run
-                args: --release --no-default-features -- cornell -p=huge
+              run: ./target/release/raytracer_cli cornell -p=huge
 
             - name: Upload result
               uses: actions/upload-artifact@v1
