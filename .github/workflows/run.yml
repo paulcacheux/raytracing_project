@@ -40,7 +40,7 @@ jobs:
               working-directory: ./raytracer_cli
 
             - name: Run
-              run: ./target/release/raytracer_cli cornell -j=1 -p=huge
+              run: ./target/release/raytracer_cli cornell -j=1 -p=test
 
             - name: Upload result
               uses: actions/upload-artifact@v1
