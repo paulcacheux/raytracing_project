@@ -36,11 +36,8 @@ jobs:
                 toolchain: nightly
 
             - name: Build raytracer
-              uses: actions-rs/cargo@v1
+              run: cargo build --release --no-default-features
               working-directory: ./raytracer_cli
-              with:
-                command: build
-                args: --release --no-default-features
 
             - name: Run
               run: ./target/release/raytracer_cli cornell -p=huge
