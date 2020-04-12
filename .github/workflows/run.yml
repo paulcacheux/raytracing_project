@@ -37,6 +37,7 @@ jobs:
 
             - name: Build raytracer
               uses: actions-rs/cargo@v1
+              working-directory: ./raytracer_cli
               with:
                 command: build
                 args: --release --no-default-features
