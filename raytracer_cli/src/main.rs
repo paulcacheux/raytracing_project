@@ -5,11 +5,12 @@ use std::sync::Arc;
 
 use clap::{App, Arg};
 use indicatif::{ProgressBar, ProgressStyle};
+use itertools::{iproduct, Itertools};
 use rand;
 use rand::prelude::*;
 use threadpool::ThreadPool;
 
-use raytracer::{self, Camera, Color, FloatTy, Hittable, Pt3, Vec3};
+use raytracer::{self, Camera, FloatTy, Hittable, Pt3, Vec3};
 
 mod default_scene;
 mod obj;
@@ -34,6 +35,8 @@ pub struct SceneDescription {
     pub presets: HashMap<String, PresetConfig>,
 }
 
+const THREAD_CHUNK_SIZE: usize = 20000;
+
 fn compute_pixel<R: Rng>(
     camera: &Camera,
     objects: &[Box<dyn Hittable>],
@@ -41,10 +44,10 @@ fn compute_pixel<R: Rng>(
     v: FloatTy,
     background: Vec3,
     rng: &mut R,
-) -> Color {
+) -> Vec3 {
     let ray = camera.get_ray(u, v);
     let color_vec = raytracer::compute_color(&objects, ray, background, rng);
-    Color::from_vec3(color_vec)
+    color_vec
 }
 
 fn search_scene(name: &str) -> SceneDescription {
@@ -113,40 +116,40 @@ fn main() {
     let (send, recv) = mpsc::channel();
     let pool = ThreadPool::new(job_count as usize);
 
-    for j in 0..ny {
+    let main_iter = iproduct!(0..sample_count, 0..ny, 0..nx);
+
+    for chunks in &main_iter.chunks(THREAD_CHUNK_SIZE) {
         let local_send = send.clone();
         let camera = camera.clone();
         let objects = objects.clone();
+        let chunks: Vec<_> = chunks.collect();
 
         pool.execute(move || {
-            let mut rng = rand::thread_rng();
+            for (_, y, x) in chunks {
+                let mut rng = rand::thread_rng();
 
-            for i in 0..nx {
-                let mut colors = Vec::with_capacity(sample_count);
-                for _ in 0..sample_count {
-                    let di: FloatTy = rng.gen();
-                    let dj: FloatTy = rng.gen();
+                let di: FloatTy = rng.gen();
+                let dj: FloatTy = rng.gen();
 
-                    let u = (i as FloatTy + di) / nx as FloatTy;
-                    let v = ((ny - j - 1) as FloatTy + dj) / ny as FloatTy;
-                    let color = compute_pixel(&camera, &objects, u, v, background_color, &mut rng);
-                    colors.push(color);
-                }
-                local_send.send((i, j, Color::average(&colors))).unwrap();
+                let u = (x as FloatTy + di) / nx as FloatTy;
+                let v = ((ny - y - 1) as FloatTy + dj) / ny as FloatTy;
+                let color = compute_pixel(&camera, &objects, u, v, background_color, &mut rng);
+                local_send.send((x, y, color)).unwrap();
             }
         })
     }
+
     drop(send);
 
-    let progress_bar = ProgressBar::new((ny * nx) as _);
+    let progress_bar = ProgressBar::new((ny * nx * sample_count) as _);
     progress_bar.set_style(
         ProgressStyle::default_bar()
             .template("{spinner:.green} [{elapsed_precise}] [{bar:40.cyan/blue}] ({eta})")
             .progress_chars("#>-"),
     );
 
-    for (i, j, color) in recv.into_iter() {
-        image.set_pixel(i, j, color);
+    for (x, y, color) in recv.into_iter() {
+        image.append_pixel(x, y, color);
         progress_bar.inc(1);
     }
 

@@ -2,13 +2,13 @@ use std::path::Path;
 
 use image::RgbImage;
 
-use raytracer::Color;
+use raytracer::{Color, FloatTy, Vec3};
 
 #[derive(Debug, Clone)]
 pub struct PixelData {
     width: usize,
     height: usize,
-    buffer: RgbImage,
+    buffer: Vec<(Vec3, usize)>,
 }
 
 impl PixelData {
@@ -16,16 +16,29 @@ impl PixelData {
         PixelData {
             width,
             height,
-            buffer: RgbImage::new(width as _, height as _),
+            buffer: vec![(Vec3::zeros(), 0); width * height],
         }
     }
 
-    pub fn set_pixel(&mut self, x: usize, y: usize, color: Color) {
-        self.buffer
-            .put_pixel(x as _, y as _, image::Rgb(color.to_rgb()));
+    pub fn append_pixel(&mut self, x: usize, y: usize, color: Vec3) {
+        if color.x.is_nan() || color.y.is_nan() || color.z.is_nan() {
+            return;
+        }
+
+        let (current_color, count) = self.buffer[(y * self.width + x) as usize];
+        let next_color = current_color + color;
+        self.buffer[(y * self.width + x)] = (next_color, count + 1);
     }
 
     pub fn save<P: AsRef<Path>>(&self, path: P) -> Result<(), image::error::ImageError> {
-        self.buffer.save(path)
+        let image = RgbImage::from_fn(self.width as _, self.height as _, |x, y| {
+            let x = x as usize;
+            let y = y as usize;
+            let (sum_color, count) = self.buffer[y * self.width + x];
+            let color = sum_color / (count as FloatTy);
+            let color = Color::from_vec3(color);
+            image::Rgb(color.to_rgb())
+        });
+        image.save(path)
     }
 }
