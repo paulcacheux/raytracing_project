@@ -1,6 +1,6 @@
 use std::path::Path;
 
-use image::RgbImage;
+use image::RgbaImage;
 
 use raytracer::{Color, FloatTy, Vec3};
 
@@ -30,15 +30,18 @@ impl PixelData {
         self.buffer[(y * self.width + x)] = (next_color, count + 1);
     }
 
-    pub fn save<P: AsRef<Path>>(&self, path: P) -> Result<(), image::error::ImageError> {
-        let image = RgbImage::from_fn(self.width as _, self.height as _, |x, y| {
+    pub fn as_image(&self) -> RgbaImage {
+        RgbaImage::from_fn(self.width as _, self.height as _, |x, y| {
             let x = x as usize;
             let y = y as usize;
             let (sum_color, count) = self.buffer[y * self.width + x];
             let color = sum_color / (count as FloatTy);
-            let color = Color::from_vec3(color);
-            image::Rgb(color.to_rgb())
-        });
-        image.save(path)
+            let color = Color::from_vec3(color).to_rgb();
+            image::Rgba([color[0], color[1], color[2], 255])
+        })
+    }
+
+    pub fn save<P: AsRef<Path>>(&self, path: P) -> Result<(), image::error::ImageError> {
+        self.as_image().save(path)
     }
 }

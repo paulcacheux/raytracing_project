@@ -1,9 +1,10 @@
 use std::collections::HashMap;
 use std::str::FromStr;
-use std::sync::mpsc;
-use std::sync::Arc;
+use std::sync::{mpsc, Arc, Mutex};
+use std::thread;
 
 use clap::{App, Arg};
+use env_logger;
 use indicatif::{ProgressBar, ProgressStyle};
 use itertools::{iproduct, Itertools};
 use rand;
@@ -13,6 +14,7 @@ use threadpool::ThreadPool;
 use raytracer::{self, Camera, FloatTy, Hittable, Pt3, Vec3};
 
 mod default_scene;
+mod gui;
 mod obj;
 mod pixel_data;
 
@@ -60,6 +62,8 @@ fn search_scene(name: &str) -> SceneDescription {
 }
 
 fn main() {
+    env_logger::init();
+
     let matches = App::new("Raytracing CLI")
         .version("0.1")
         .author("Paul Cacheux <paulcacheux@gmail.com>")
@@ -111,7 +115,7 @@ fn main() {
 
     let sample_count = preset.sample_count;
 
-    let mut image = PixelData::new(nx, ny);
+    let image = Arc::new(Mutex::new(PixelData::new(nx, ny)));
 
     let (send, recv) = mpsc::channel();
     let pool = ThreadPool::new(job_count as usize);
@@ -148,13 +152,22 @@ fn main() {
             .progress_chars("#>-"),
     );
 
-    for (x, y, color) in recv.into_iter() {
-        image.append_pixel(x, y, color);
-        progress_bar.inc(1);
-    }
+    let rec_image = image.clone();
+    let recuperator = thread::spawn(move || {
+        for (x, y, color) in recv.into_iter() {
+            rec_image.lock().unwrap().append_pixel(x, y, color);
+            progress_bar.inc(1);
+        }
+    });
 
+    gui::run::<gui::RayTracingGUI>(nx, ny, image);
+
+    recuperator.join().unwrap();
+
+    /*
     let output_path = "./last_result.png";
-    image.save(output_path).unwrap();
+    image.lock().unwrap().save(output_path).unwrap();
+    */
 }
 
 fn validate_integer(input_value: String) -> Result<(), String> {
