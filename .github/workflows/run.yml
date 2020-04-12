@@ -40,7 +40,7 @@ jobs:
               uses: actions-rs/cargo@v1
               with:
                 command: run
-                args: --release -- cornell -p=huge
+                args: --release --no-default-features -- cornell -p=huge
 
             - name: Upload result
               uses: actions/upload-artifact@v1

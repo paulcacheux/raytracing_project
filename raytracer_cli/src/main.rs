@@ -14,6 +14,7 @@ use threadpool::ThreadPool;
 use raytracer::{self, Camera, FloatTy, Hittable, Pt3, Vec3};
 
 mod default_scene;
+#[cfg(feature = "gui")]
 mod gui;
 mod obj;
 mod pixel_data;
@@ -160,14 +161,18 @@ fn main() {
         }
     });
 
-    gui::run::<gui::RayTracingGUI>(nx, ny, image);
+    #[cfg(feature = "gui")]
+    {
+        gui::run::<gui::RayTracingGUI>(nx, ny, image);
+    }
 
     recuperator.join().unwrap();
 
-    /*
-    let output_path = "./last_result.png";
-    image.lock().unwrap().save(output_path).unwrap();
-    */
+    #[cfg(not(feature = "gui"))]
+    {
+        let output_path = "./last_result.png";
+        image.lock().unwrap().save(output_path).unwrap();
+    }
 }
 
 fn validate_integer(input_value: String) -> Result<(), String> {
